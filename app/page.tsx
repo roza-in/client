@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -49,9 +50,17 @@ export default function Home() {
         </div>
 
         {/* Subtle Footer Text */}
-        <p className="mt-12 sm:mt-16 lg:mt-20 text-sm text-muted-foreground text-center opacity-75">
-          Launching soon
-        </p>
+        <div className="w-full mt-16 sm:mt-20 lg:mt-24 mb-8 sm:mb-12 lg:mb-16 flex flex-col sm:flex-row items-center justify-around gap-4 sm:gap-6">
+          <Link href="/privacy" className="text-sm text-muted-foreground underline">
+            Privacy Policy
+          </Link>
+            <p className="text-sm text-muted-foreground text-center opacity-75">
+            Launching soon
+          </p>
+          <Link href="/terms" className="text-sm text-muted-foreground underline">
+            Terms & Conditions
+          </Link>
+        </div>
       </div>
     </div>
   );
