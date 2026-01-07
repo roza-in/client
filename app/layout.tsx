@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 // Font Configuration
@@ -19,40 +22,41 @@ const geistMono = Geist_Mono({
 
 // Metadata Configuration
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: {
-    default: "Rozx",
-    template: "%s | Rozx",
+    default: "ROZX - Digital Operating System for Indian Healthcare",
+    template: "%s | ROZX",
   },
-  description: "A modern web application built with Next.js 16 and Tailwind CSS v4",
-  keywords: ["Next.js", "React", "Tailwind CSS", "TypeScript"],
+  description: "ROZX is the Digital Operating System for Indian Hospitals & Clinics. Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
+  keywords: ["Healthcare", "Hospital Management", "Doctor Booking", "Patient Management", "India Healthcare", "Medical SaaS", "ROZX"],
   authors: [
     {
-      name: "Rozx Team",
+      name: "ROZX Team",
       url: "https://rozx.in",
     },
   ],
-  creator: "Rozx Team",
+  creator: "ROZX Team",
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_IN",
     url: "https://rozx.in",
-    title: "Rozx",
-    description: "A modern web application built with Next.js 16 and Tailwind CSS v4",
-    siteName: "Rozx",
+    title: "ROZX - Digital Operating System for Indian Healthcare",
+    description: "Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
+    siteName: "ROZX",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Rozx Open Graph Image",
+        alt: "ROZX - Healthcare Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rozx",
-    description: "A modern web application built with Next.js 16 and Tailwind CSS v4",
-    creator: "@rozxteam",
+    title: "ROZX - Digital Operating System for Indian Healthcare",
+    description: "Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
+    creator: "@rozxhealth",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -100,17 +104,31 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="antialiased min-h-screen bg-background text-foreground">
-        {/* Skip to main content for accessibility */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
+      <body className="min-h-screen bg-background text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          Skip to main content
-        </a>
-        <main id="main-content" className="relative">
-          {children}
-        </main>
+          <AuthProvider>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
+            >
+              Skip to main content
+            </a>
+            <main id="main-content" className="relative">
+              {children}
+            </main>
+          </AuthProvider>
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              className: 'bg-card text-card-foreground border border-border',
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

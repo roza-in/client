@@ -74,10 +74,45 @@
 
 /* ============================================
    DARK MODE (Night-shift friendly)
+   Supports both system preference and class toggle
    ============================================ */
 
+.dark,
+[data-theme="dark"] {
+  --background: #020617;          /* deep navy */
+  --foreground: #E2E8F0;          /* slate-200 */
+
+  --card: #0F172A;                /* slate-900 */
+  --card-foreground: #E2E8F0;
+
+  --popover: #0F172A;
+  --popover-foreground: #E2E8F0;
+
+  --primary: #14B8A6;             /* teal-500 */
+  --primary-foreground: #020617;
+
+  --secondary: #1E293B;           /* slate-800 */
+  --secondary-foreground: #E2E8F0;
+
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;    /* slate-400 */
+
+  --accent: #334155;              /* slate-700 */
+  --accent-foreground: #E2E8F0;
+
+  --success: #16A34A;
+  --warning: #EAB308;
+  --destructive: #DC2626;
+  --info: #38BDF8;
+
+  --border: #334155;
+  --input: #334155;
+  --ring: #14B8A6;
+}
+
+/* Also support system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #020617;          /* deep navy */
     --foreground: #E2E8F0;          /* slate-200 */
 

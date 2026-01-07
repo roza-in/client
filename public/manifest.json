@@ -1,0 +1,20 @@
+{
+  "name": "ROZX - Digital Operating System for Indian Healthcare",
+  "short_name": "ROZX",
+  "description": "Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#14b8a6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["health", "medical", "business"],
+  "lang": "en-IN"
+}
