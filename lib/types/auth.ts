@@ -17,7 +17,6 @@ export interface User {
   email_verified: boolean;
   full_name: string | null;
   role: UserRole;
-  status: UserStatus;
   gender: Gender | null;
   date_of_birth: string | null;
   blood_group: BloodGroup | null;
@@ -33,6 +32,30 @@ export interface User {
   login_count: number;
   created_at: string;
   updated_at: string;
+  avatar_url?: string | null;
+  preferred_language?: string | null;
+  timezone?: string | null;
+  is_active?: boolean;
+  is_blocked?: boolean;
+  blocked_reason?: string | null;
+  blocked_at?: string | null;
+  blocked_by?: string | null;
+  last_login_ip?: string | null;
+  failed_login_attempts?: number | null;
+  locked_until?: string | null;
+  google_id?: string | null;
+  password_hash?: string | null;
+  phone_verified_at?: string | null;
+  email_verified_at?: string | null;
+  allergies?: string | null;
+  chronic_conditions?: string | null;
+  current_medications?: string | null;
+  medical_history?: string | null;
+  height_cm?: number | null;
+  weight_kg?: number | null;
+  address?: string | null;
+  emergency_contact?: string | null;
+  hospitals?: Array<{ id: string; name?: string }> | null;
 }
 
 /** Camel case version for frontend components */
@@ -44,22 +67,9 @@ export interface UserProfile {
   emailVerified: boolean;
   fullName: string | null;
   role: UserRole;
-  status: UserStatus;
-  gender: Gender | null;
-  dateOfBirth: string | null;
-  bloodGroup: BloodGroup | null;
   profilePictureUrl: string | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  state: string | null;
-  pincode: string | null;
-  emergencyContactName: string | null;
-  emergencyContactPhone: string | null;
-  lastLoginAt: string | null;
-  loginCount: number;
-  createdAt: string;
-  updatedAt: string;
+  doctor?: any | null;
+  hospital?: any | null;
 }
 
 // ============================================================================
@@ -97,11 +107,17 @@ export interface LoginCredentials {
   password?: string;
 }
 
+export interface PasswordLoginInput {
+  email: string;
+  password: string;
+}
+
 export interface RegisterInput {
   phone: string;
   email?: string;
   fullName: string;
   password?: string;
+  otp: string;
   role?: UserRole;
 }
 
@@ -132,6 +148,8 @@ export interface OTPVerifyInput {
   email?: string;
   otp: string;
   purpose: 'registration' | 'login' | 'password_reset' | 'phone_verification' | 'email_verification';
+  // Optional: set password during OTP login
+  password?: string;
 }
 
 export interface OTPResponse {

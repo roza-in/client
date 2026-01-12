@@ -15,7 +15,7 @@ import type { HospitalType } from '@/lib/types';
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { sendOtp, verifyOtp, register, registerAsHospital, isLoading } = useAuth();
+  const { sendOtp, register, registerAsHospital, isLoading } = useAuth();
 
   const initialType = (searchParams.get('type') as 'patient' | 'hospital') || 'patient';
   const [userType, setUserType] = useState<'patient' | 'hospital'>(initialType);
@@ -45,6 +45,8 @@ export default function RegisterPage() {
     state: '',
     pincode: '',
     otp: '',
+    password: '',
+    confirmPassword: '',
   });
   const [hospitalOtpSent, setHospitalOtpSent] = useState(false);
   const [hospitalOtpLoading, setHospitalOtpLoading] = useState(false);
@@ -72,6 +74,11 @@ export default function RegisterPage() {
 
     if (!patientForm.fullName || !patientForm.email || !patientForm.phone) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patientForm.email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -113,20 +120,16 @@ export default function RegisterPage() {
 
     try {
       setPatientOtpLoading(true);
-      await verifyOtp({
-        phone: patientForm.phone,
-        otp: patientForm.otp,
-        purpose: 'registration',
-      });
-
       await register({
+        phone: patientForm.phone,
         fullName: patientForm.fullName,
         email: patientForm.email,
-        phone: patientForm.phone,
+        password: patientForm.password,
+        otp: patientForm.otp,
       });
 
       toast.success('Registration successful!');
-      router.push('/dashboard');
+      router.push('/patient');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -141,6 +144,7 @@ export default function RegisterPage() {
     if (
       !hospitalForm.fullName ||
       !hospitalForm.hospitalName ||
+      !hospitalForm.hospitalType ||
       !hospitalForm.email ||
       !hospitalForm.phone ||
       !hospitalForm.addressLine1 ||
@@ -159,6 +163,11 @@ export default function RegisterPage() {
 
     if (!/^\d{6}$/.test(hospitalForm.pincode)) {
       toast.error('Please enter a valid 6-digit pincode');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hospitalForm.email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -183,38 +192,43 @@ export default function RegisterPage() {
       return;
     }
 
+    if (hospitalForm.password !== hospitalForm.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (hospitalForm.password && hospitalForm.password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
     try {
       setHospitalOtpLoading(true);
-      await verifyOtp({
+      await registerAsHospital({
         phone: hospitalForm.phone,
         otp: hospitalForm.otp,
-        purpose: 'registration',
-      });
-
-      await registerAsHospital({
         fullName: hospitalForm.fullName,
-        hospitalName: hospitalForm.hospitalName,
         email: hospitalForm.email,
-        phone: hospitalForm.phone,
-        hospitalType: hospitalForm.hospitalType,
-        addressLine1: hospitalForm.addressLine1,
-        city: hospitalForm.city,
-        state: hospitalForm.state,
-        pincode: hospitalForm.pincode,
+        password: hospitalForm.password,
+        hospital: {
+          name: hospitalForm.hospitalName,
+          type: hospitalForm.hospitalType,
+          phone: hospitalForm.phone,
+          email: hospitalForm.email,
+          addressLine1: hospitalForm.addressLine1,
+          city: hospitalForm.city,
+          state: hospitalForm.state,
+          pincode: hospitalForm.pincode,
+        },
       });
 
       toast.success('Hospital registration successful!');
-      router.push('/dashboard');
+      router.push('/hospital');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setHospitalOtpLoading(false);
     }
-  };
-
-  const handleGoogleSuccess = () => {
-    toast.success('Registration successful!');
-    router.push('/dashboard');
   };
 
   const handleGoogleError = (error: Error) => {
@@ -266,6 +280,7 @@ export default function RegisterPage() {
         <form
           onSubmit={patientOtpSent ? handlePatientVerifyAndRegister : handlePatientSendOTP}
           className="space-y-4"
+          noValidate
         >
           {!patientOtpSent ? (
             <>
@@ -276,7 +291,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setPatientForm({ ...patientForm, fullName: e.target.value })
                   }
-                  placeholder="John Doe"
+                  placeholder="Shivam Maurya"
                   disabled={patientOtpLoading || isLoading}
                   required
                 />
@@ -288,7 +303,7 @@ export default function RegisterPage() {
                   type="email"
                   value={patientForm.email}
                   onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
-                  placeholder="john@example.com"
+                  placeholder="shivam@example.com"
                   disabled={patientOtpLoading || isLoading}
                   required
                 />
@@ -430,6 +445,7 @@ export default function RegisterPage() {
         <form
           onSubmit={hospitalOtpSent ? handleHospitalVerifyAndRegister : handleHospitalSendOTP}
           className="space-y-4"
+          noValidate
         >
           {!hospitalOtpSent ? (
             <>
@@ -440,7 +456,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setHospitalForm({ ...hospitalForm, fullName: e.target.value })
                   }
-                  placeholder="John Doe"
+                  placeholder="Shivam Maurya"
                   disabled={hospitalOtpLoading || isLoading}
                   required
                 />
@@ -453,7 +469,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setHospitalForm({ ...hospitalForm, hospitalName: e.target.value })
                   }
-                  placeholder="ABC Hospital"
+                  placeholder="XYZ Hospital"
                   disabled={hospitalOtpLoading || isLoading}
                   required
                 />
@@ -606,6 +622,35 @@ export default function RegisterPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium mb-2">Password</label>
+                <Input
+                  type="password"
+                  value={hospitalForm.password}
+                  onChange={(e) => setHospitalForm({ ...hospitalForm, password: e.target.value })}
+                  placeholder="••••••••"
+                  disabled={hospitalOtpLoading}
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Minimum 8 characters
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Confirm Password</label>
+                <Input
+                  type="password"
+                  value={hospitalForm.confirmPassword}
+                  onChange={(e) =>
+                    setHospitalForm({ ...hospitalForm, confirmPassword: e.target.value })
+                  }
+                  placeholder="••••••••"
+                  disabled={hospitalOtpLoading}
+                  required
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -667,7 +712,7 @@ export default function RegisterPage() {
 
           {/* Google Signup */}
           <GoogleLoginButton
-            onSuccess={handleGoogleSuccess}
+            className="w-full"
             onError={handleGoogleError}
             disabled={isLoading || hospitalOtpLoading || patientOtpLoading}
           />

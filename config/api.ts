@@ -169,6 +169,13 @@ export function setAuthTokens(accessToken: string, refreshToken: string): void {
  */
 export function clearAuthTokens(): void {
   tokenStorage.clearTokens();
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem('auth_pending');
+    } catch (e) {
+      // ignore
+    }
+  }
 }
 
 /**
@@ -265,6 +272,7 @@ async function request<T>(
       headers,
       body: fetchOptions.body ? JSON.stringify(fetchOptions.body) : undefined,
       signal: controller.signal,
+      credentials: 'include',
     });
 
     clearTimeout(timeoutId);
@@ -357,6 +365,7 @@ async function requestWithMeta<T>(
       headers,
       body: fetchOptions.body ? JSON.stringify(fetchOptions.body) : undefined,
       signal: controller.signal,
+      credentials: 'include',
     });
 
     clearTimeout(timeoutId);
@@ -446,12 +455,13 @@ export const api = {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: formData,
-        signal: controller.signal,
-        ...fetchOptions,
-      });
+          method: 'POST',
+          headers,
+          body: formData,
+          signal: controller.signal,
+          credentials: 'include',
+          ...fetchOptions,
+        });
 
       clearTimeout(timeoutId);
 
@@ -473,6 +483,81 @@ export const api = {
 
       throw new ApiError('Upload failed', 500, 'UPLOAD_ERROR', error);
     }
+  },
+  /**
+   * Upload with progress callback using XHR
+   */
+  uploadWithProgress: <T>(
+    endpoint: string,
+    formData: FormData,
+    onProgress?: (percent: number) => void,
+    options?: RequestOptions
+  ): Promise<T> => {
+    const { timeout = 60000, params } = options || {};
+
+    const url = buildUrl(endpoint, params);
+
+    const token = tokenStorage.getAccessToken();
+
+    return new Promise<T>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.withCredentials = true;
+
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        try {
+          xhr.abort();
+        } catch {}
+        reject(new ApiError('Upload timed out', 408, 'TIMEOUT_ERROR'));
+      }, timeout);
+
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable && typeof onProgress === 'function') {
+          const percent = Math.round((ev.loaded / ev.total) * 100);
+          try { onProgress(percent); } catch (e) { /* ignore */ }
+        }
+      };
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState !== 4) return;
+        clearTimeout(timer);
+        if (timedOut) return;
+
+        try {
+          const status = xhr.status === 0 ? 500 : xhr.status;
+          let data: ApiResponse<T> | null = null;
+          try { data = JSON.parse(xhr.responseText) as ApiResponse<T>; } catch (e) { /* ignore */ }
+
+          if (status >= 200 && status < 300 && data && data.success) {
+            resolve(data.data as T);
+            return;
+          }
+
+          const message = data?.error?.message || data?.message || 'Upload failed';
+          reject(new ApiError(message, status, data?.error?.code));
+        } catch (err) {
+          reject(new ApiError('Upload failed', 500, 'UPLOAD_ERROR', err));
+        }
+      };
+
+      xhr.onerror = () => {
+        clearTimeout(timer);
+        reject(new ApiError('Network error. Please check your connection.', 0, 'NETWORK_ERROR'));
+      };
+
+      xhr.ontimeout = () => {
+        clearTimeout(timer);
+        reject(new ApiError('Upload timed out', 408, 'TIMEOUT_ERROR'));
+      };
+
+      xhr.send(formData);
+    });
   },
 };
 

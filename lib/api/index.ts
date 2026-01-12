@@ -23,6 +23,9 @@ export {
 export {
   sendOTP,
   verifyOTP,
+  loginWithPassword,
+  getGoogleOAuthUrl,
+  handleGoogleCallback,
   googleOAuth,
   registerPatient,
   registerHospital,
@@ -31,6 +34,8 @@ export {
   logout,
   isAuthenticated,
   authApi,
+  type AuthResponse,
+  type HospitalRegisterInput,
 } from './auth';
 
 // Hospital API
@@ -60,6 +65,16 @@ export {
   getDoctorsAvailableToday,
   doctorApi,
 } from './doctor';
+
+// Upload API
+export {
+  uploadDoctorAvatar,
+  uploadHospitalLogo,
+  uploadHospitalImages,
+  uploadPatientAvatar,
+  uploadGeneric,
+  uploadApi,
+} from './upload';
 
 // Appointment API
 export {

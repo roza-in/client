@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Bell,
   Search,
@@ -41,8 +41,20 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const router = useRouter();
   const { user } = useUser();
   const { logout } = useAuth();
-  const { unreadCount } = useNotifications();
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  // const { unreadCount } = useNotifications();
+  const pathname = usePathname();
+
+  const capitalize = (s?: string) => !s ? '' : s.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+  // Build breadcrumb items: always start with Dashboard, then path segments (skip role/admin segment)
+  const segments = (pathname || '/').split('/').filter(Boolean);
+  const skipFirst = segments.length > 0 && (segments[0] === 'admin' || segments[0] === (user?.role ?? '').toLowerCase() || segments[0] === 'dashboard');
+  const visibleSegments = skipFirst ? segments.slice(1) : segments;
+  const baseHref = user?.role === 'admin' ? '/admin' : '/';
+  const crumbs = [
+    { label: capitalize(user?.role) ? `${capitalize(user?.role)} Dashboard` : 'Dashboard', href: baseHref },
+    ...visibleSegments.map((seg, idx) => ({ label: capitalize(seg), href: `/${segments.slice(0, (skipFirst ? idx + 2 : idx + 1)).join('/')}` })),
+  ];
 
   const handleSignOut = async () => {
     try {
@@ -72,29 +84,23 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
           </Button>
         )}
 
-        {/* Search */}
-        <div className="hidden md:flex">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-64 pl-9"
-              aria-label="Search"
-            />
-          </div>
-        </div>
-
-        {/* Mobile Search Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsSearchOpen(!isSearchOpen)}
-          aria-label="Toggle search"
-        >
-          <Search className="h-5 w-5" />
-        </Button>
+        {/* Breadcrumbs */}
+        <nav className="hidden sm:flex" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
+            {crumbs.map((c, i) => (
+              <li key={i} className="flex items-center">
+                {i !== 0 && <span className="mx-2 text-muted-foreground">/</span>}
+                {i < crumbs.length - 1 ? (
+                  <Link href={c.href} className="text-sm text-muted-foreground hover:text-foreground">
+                    {c.label}
+                  </Link>
+                ) : (
+                  <span className="font-medium text-foreground">{c.label}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
       </div>
 
       {/* Right Section */}
@@ -110,11 +116,11 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {/* {unreadCount > 0 && (
             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
-          )}
+          )} */}
         </Button>
 
         {/* Help */}
@@ -156,13 +162,13 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/profile">
+              <Link href={`/${user.role}/profile`}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/settings">
+              <Link href={`/${user.role}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Link>
@@ -178,22 +184,6 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Mobile Search Overlay */}
-      {isSearchOpen && (
-        <div className="absolute inset-x-0 top-16 z-50 border-b bg-background p-4 md:hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full pl-9"
-              autoFocus
-              aria-label="Search"
-            />
-          </div>
-        </div>
-      )}
     </header>
   );
 }

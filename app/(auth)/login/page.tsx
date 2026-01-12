@@ -1,18 +1,44 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useAuthStore } from '@/hooks/use-auth';
 import { GoogleLoginButton } from '@/components/common/google-login-button';
 import { toast } from 'sonner';
 import { Phone, Mail, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { sendOtp, verifyOtp, isLoading, error } = useAuth();
+  const searchParams = useSearchParams();
+  const { sendOtp, verifyOtp, loginWithPassword, isLoading, error } = useAuth();
+  const redirectParam = searchParams?.get('redirect');
+
+  const getRedirectPath = (role?: string) => {
+    if (redirectParam) return redirectParam;
+    switch (role) {
+      case 'admin':
+        return '/admin';
+      case 'hospital':
+        return '/hospital';
+      case 'doctor':
+        return '/doctor';
+      case 'patient':
+        return '/patient';
+      default:
+        return '/';}
+  };
+
+  // Helper to validate redirect path and fallback to role-based routing
+  const getValidRedirectPath = (role?: string) => {
+    if (redirectParam && (redirectParam.includes('/admin') || redirectParam.includes('/hospital') || redirectParam.includes('/doctor') || redirectParam.includes('/patient'))) {
+      return redirectParam;
+    }
+    // Otherwise use role-based routing
+    return getRedirectPath(role);
+  };
 
   const [authMethod, setAuthMethod] = useState<'phone' | 'email'>('phone');
   
@@ -25,6 +51,7 @@ export default function LoginPage() {
   // Email state
   const [email, setEmail] = useState('');
   const [emailPassword, setEmailPassword] = useState('');
+  const [emailLoginLoading, setEmailLoginLoading] = useState(false);
   
   // Cooldown timer
   const [otpCooldown, setOtpCooldown] = useState(0);
@@ -70,9 +97,9 @@ export default function LoginPage() {
 
     try {
       setPhoneOtpLoading(true);
-      await verifyOtp({ phone, otp: phoneOtp, purpose: 'login' });
+      const response = await verifyOtp({ phone, otp: phoneOtp, purpose: 'login' });
       toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push(getValidRedirectPath(response.user.role));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to verify OTP');
     } finally {
@@ -80,13 +107,30 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = () => {
-    toast.success('Google login successful!');
-    router.push('/dashboard');
-  };
-
   const handleGoogleError = (error: Error) => {
     toast.error(error.message || 'Google login failed');
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !emailPassword) {
+      toast.error('Please enter email and password');
+      return;
+    }
+
+    try {
+      setEmailLoginLoading(true);
+      const response = await loginWithPassword({ email: trimmedEmail, password: emailPassword });
+      toast.success('Login successful!');
+      router.push(getValidRedirectPath(response.user.role));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to login');
+    } finally {
+      setEmailLoginLoading(false);
+    }
   };
 
   return (
@@ -129,7 +173,7 @@ export default function LoginPage() {
 
       {/* Phone OTP Login */}
       {authMethod === 'phone' && (
-        <form onSubmit={handleSendPhoneOTP} className="space-y-4">
+        <form onSubmit={handleSendPhoneOTP} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium mb-2">Phone Number</label>
             <Input
@@ -171,6 +215,21 @@ export default function LoginPage() {
                 />
               </div>
 
+              {otpCooldown > 0 ? (
+                <p className="text-xs text-center text-muted-foreground">
+                  Resend OTP in {otpCooldown}s
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSendPhoneOTP}
+                  className="w-full text-sm text-primary hover:underline"
+                  disabled={phoneOtpLoading}
+                >
+                  Didn't receive code? Resend
+                </button>
+              )}
+
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -199,21 +258,6 @@ export default function LoginPage() {
                   )}
                 </Button>
               </div>
-
-              {otpCooldown > 0 ? (
-                <p className="text-xs text-center text-muted-foreground">
-                  Resend OTP in {otpCooldown}s
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSendPhoneOTP}
-                  className="w-full text-sm text-primary hover:underline"
-                  disabled={phoneOtpLoading}
-                >
-                  Didn't receive code? Resend
-                </button>
-              )}
             </>
           )}
         </form>
@@ -221,45 +265,43 @@ export default function LoginPage() {
 
       {/* Email Login */}
       {authMethod === 'email' && (
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+        <form onSubmit={handleEmailLogin} className="space-y-4" noValidate>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Email</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              disabled={isLoading}
+              placeholder="you@example.com"
+              autoComplete="email"
               required
+              disabled={emailLoginLoading}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Password</label>
             <Input
               type="password"
               value={emailPassword}
               onChange={(e) => setEmailPassword(e.target.value)}
-              placeholder="••••••••"
-              disabled={isLoading}
+              placeholder="Enter your password"
+              autoComplete="current-password"
               required
+              disabled={emailLoginLoading}
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
+          <Button type="submit" className="w-full" disabled={emailLoginLoading}>
+            {emailLoginLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
               </>
             ) : (
-              'Sign In'
+              'Sign in'
             )}
           </Button>
-
-          <p className="text-xs text-center text-muted-foreground">
-            Note: Email/password login coming soon
-          </p>
         </form>
       )}
 
@@ -278,9 +320,10 @@ export default function LoginPage() {
 
       {/* Google Login */}
       <GoogleLoginButton
-        onSuccess={handleGoogleSuccess}
+        className="w-full"
         onError={handleGoogleError}
-        disabled={isLoading || phoneOtpLoading}
+        disabled={emailLoginLoading || phoneOtpLoading}
+        redirectTo={redirectParam || undefined}
       />
 
       {/* Footer */}

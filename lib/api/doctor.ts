@@ -1,30 +1,14 @@
-/**
- * Doctor API
- * Handles all doctor-related API calls
- */
 
 import { api, buildQueryParams, type PaginationMeta } from '@/config/api';
-import type {
-  Doctor,
-  DoctorListItem,
-  DoctorStats,
-  DoctorFilters,
-  AvailableSlot,
-  DoctorSchedule,
-  Specialization,
-} from '@/lib/types';
+import type { Doctor, DoctorListItem, DoctorStats, DoctorFilters,AvailableSlot, DoctorSchedule, Specialization } from '@/lib/types';
 
-/**
- * Doctor detail with full information
- */
-export type DoctorDetail = Doctor;
+// Add Doctor 
+export async function addDoctor(data: Partial<Doctor>): Promise<Doctor> {
+  return api.post<Doctor>('/doctors', data);
+}
 
-/**
- * List doctors with filters and pagination
- */
-export async function listDoctors(
-  filters: DoctorFilters = {}
-): Promise<{ doctors: DoctorListItem[]; meta: PaginationMeta }> {
+// List doctors with filters
+export async function listDoctors( filters: DoctorFilters = {}): Promise<{ doctors: DoctorListItem[]; meta: PaginationMeta }> {
   const params = buildQueryParams(filters as Record<string, unknown>);
   const response = await api.getWithMeta<DoctorListItem[]>('/doctors', { params });
   return {
@@ -33,23 +17,27 @@ export async function listDoctors(
   };
 }
 
-/**
- * Get doctor details by ID
- */
-export async function getDoctor(id: string): Promise<DoctorDetail> {
-  return api.get<DoctorDetail>(`/doctors/${id}`);
+// Get doctor by ID
+export async function getDoctor(id: string): Promise<Doctor> {
+  return api.get<Doctor>(`/doctors/${id}`);
 }
 
-/**
- * Get doctor statistics
- */
+// Update doctor
+export async function updateDoctor(id: string, data: Partial<Doctor>): Promise<Doctor> {
+  return api.patch<Doctor>(`/doctors/${id}`, data);
+}
+
+// Delete doctor
+export async function deleteDoctor(id: string): Promise<void> {
+  return api.delete<void>(`/doctors/${id}`);
+}
+
+// Get doctor statistics
 export async function getDoctorStats(id: string): Promise<DoctorStats> {
   return api.get<DoctorStats>(`/doctors/${id}/stats`);
 }
 
-/**
- * Get doctor's available slots
- */
+// Get doctor's available slots
 export async function getDoctorAvailability(
   id: string,
   filters: {
@@ -62,23 +50,17 @@ export async function getDoctorAvailability(
   return api.get<AvailableSlot[]>(`/doctors/${id}/availability`, { params });
 }
 
-/**
- * Get doctor's schedules
- */
+// Get doctor's schedules
 export async function getDoctorSchedules(id: string): Promise<DoctorSchedule[]> {
   return api.get<DoctorSchedule[]>(`/schedules/doctor/${id}`);
 }
 
-/**
- * Get all specializations
- */
+// Get list of specializations
 export async function getSpecializations(): Promise<Specialization[]> {
   return api.get<Specialization[]>('/doctors/specializations');
 }
 
-/**
- * Search doctors by name or specialization
- */
+// Search doctors by name or specialization
 export async function searchDoctors(
   query: string,
   options: {
@@ -94,9 +76,7 @@ export async function searchDoctors(
   return api.get<DoctorListItem[]>('/doctors', { params });
 }
 
-/**
- * Get doctors by hospital
- */
+// Get doctors by hospital ID
 export async function getDoctorsByHospital(
   hospitalId: string,
   filters: Omit<DoctorFilters, 'hospitalId'> = {}
@@ -104,9 +84,7 @@ export async function getDoctorsByHospital(
   return listDoctors({ ...filters, hospitalId });
 }
 
-/**
- * Get top-rated doctors
- */
+// Get top-rated doctors
 export async function getTopRatedDoctors(
   options: {
     specialization?: string;
@@ -123,9 +101,7 @@ export async function getTopRatedDoctors(
   return api.get<DoctorListItem[]>('/doctors', { params });
 }
 
-/**
- * Get doctors available today
- */
+// Get doctors available today
 export async function getDoctorsAvailableToday(
   filters: {
     specialization?: string;
@@ -142,12 +118,13 @@ export async function getDoctorsAvailableToday(
   return api.get<DoctorListItem[]>('/doctors', { params });
 }
 
-/**
- * Doctor API namespace export
- */
+
+// Doctor API namespace export
 export const doctorApi = {
+  add: addDoctor,
   list: listDoctors,
   get: getDoctor,
+  update: updateDoctor,
   getStats: getDoctorStats,
   getAvailability: getDoctorAvailability,
   getSchedules: getDoctorSchedules,
@@ -156,4 +133,5 @@ export const doctorApi = {
   getByHospital: getDoctorsByHospital,
   getTopRated: getTopRatedDoctors,
   getAvailableToday: getDoctorsAvailableToday,
+  delete: deleteDoctor,
 };

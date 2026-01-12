@@ -17,9 +17,17 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  UserPlus,
+  Clock,
+  CalendarOff,
+  History,
+  CalendarPlus,
+  Folder,
+  ShieldCheck,
+  AlertTriangle,
+  Headset,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { useRole, useUser } from '@/hooks/use-auth';
 
@@ -36,59 +44,90 @@ interface NavGroup {
 }
 
 const navigationByRole: Record<string, NavGroup[]> = {
-  hospital_admin: [
+  hospital: [
     {
       items: [
-        { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { title: 'Dashboard', href: '/hospital', icon: LayoutDashboard },
       ],
     },
     {
-      title: 'Management',
+      title: 'Hospital',
       items: [
-        { title: 'Hospital Profile', href: '/hospital/profile', icon: Building2 },
+        { title: 'Profile', href: '/hospital/profile', icon: Building2 },
         { title: 'Doctors', href: '/hospital/doctors', icon: Stethoscope },
-        { title: 'Schedules', href: '/hospital/schedules', icon: Calendar },
+        { title: 'Availability', href: '/hospital/availability', icon: Calendar },
+        { title: 'Patients', href: '/hospital/patients', icon: Users },
       ],
     },
     {
       title: 'Operations',
       items: [
         { title: 'Appointments', href: '/hospital/appointments', icon: ClipboardList },
-        { title: 'Payments', href: '/hospital/payments', icon: CreditCard },
+        { title: 'Reception', href: '/hospital/reception', icon: UserPlus },
       ],
     },
     {
-      title: 'Settings',
+      title: 'Billing',
       items: [
-        { title: 'Settings', href: '/hospital/settings', icon: Settings },
+        { title: 'Payments', href: '/hospital/payments', icon: CreditCard },
+        { title: 'Invoices', href: '/hospital/invoices', icon: FileText },
       ],
-    },
+    }
   ],
+
   doctor: [
     {
       items: [
-        { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { title: "Today's Appointments", href: '/doctor', icon: Calendar },
       ],
     },
     {
       title: 'Clinical',
       items: [
-        { title: "Today's Appointments", href: '/doctor/today', icon: Calendar },
         { title: 'My Patients', href: '/doctor/patients', icon: Users },
-        { title: 'Consultations', href: '/doctor/consultations', icon: FileText },
+        { title: 'Prescriptions', href: '/doctor/prescriptions', icon: FileText },
+        { title: 'Past Consultations', href: '/doctor/consultations', icon: History },
+      ],
+    },
+    {
+      title: 'Availability',
+      items: [
+        { title: 'My Schedule', href: '/doctor/schedule', icon: Clock },
+        { title: 'Leaves', href: '/doctor/leaves', icon: CalendarOff },
       ],
     },
   ],
   admin: [
     {
       items: [
-        { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+      ],
+    },
+    {
+      title: 'Management',
+      items: [
+        { title: 'Hospitals', href: '/admin/hospitals', icon: Building2 },
+        { title: 'Doctors', href: '/admin/doctors', icon: Stethoscope },
+        { title: 'Patients', href: '/admin/patients', icon: Users },
+      ],
+    },
+    {
+      title: 'Operations',
+      items: [
+        { title: 'Appointments', href: '/admin/appointments', icon: ClipboardList },
+        { title: 'Support', href: '/admin/support', icon: Headset },
+      ],
+    },
+    {
+      title: 'Finance',
+      items: [
+        { title: 'Payments', href: '/admin/payments', icon: CreditCard },
+        { title: 'Refunds', href: '/admin/refunds', icon: AlertTriangle },
       ],
     },
     {
       title: 'Platform',
       items: [
-        { title: 'Hospitals', href: '/admin/hospitals', icon: Building2 },
         { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
         { title: 'Audit Logs', href: '/admin/audits', icon: Shield },
       ],
@@ -97,10 +136,15 @@ const navigationByRole: Record<string, NavGroup[]> = {
   patient: [
     {
       items: [
-        { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { title: 'Home', href: '/patient', icon: LayoutDashboard },
+        { title: 'Book Appointment', href: '/patient/book', icon: CalendarPlus },
+        { title: 'My Appointments', href: '/patient/appointments', icon: ClipboardList },
+        { title: 'Prescriptions', href: '/patient/prescriptions', icon: FileText },
+        { title: 'Health Records', href: '/patient/records', icon: Folder },
+        { title: 'Payments', href: '/patient/payments', icon: CreditCard },
       ],
     },
-  ],
+  ]
 };
 
 export interface SidebarProps {

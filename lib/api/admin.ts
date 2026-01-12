@@ -39,7 +39,7 @@ export interface DashboardStats {
  * Get admin dashboard stats
  */
 export async function getDashboardStats(): Promise<DashboardStats> {
-  return api.get<DashboardStats>('/admin/dashboard');
+  return api.get<DashboardStats>('/admin');
 }
 
 /**

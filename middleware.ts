@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Routes that require authentication
-const protectedRoutes = ['/dashboard', '/hospital', '/doctor', '/admin', '/settings'];
+const protectedRoutes = ['/hospital', '/doctor', '/admin', '/settings'];
 
 // Routes that should redirect to dashboard if authenticated
 const authRoutes = ['/login', '/register', '/auth/signup', '/auth/verify-otp'];
@@ -51,6 +51,12 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !user) {
+    // Allow if our app session cookie exists (we'll validate tokens on API requests)
+    const appToken = request.cookies.get('rozx_access')?.value;
+    if (appToken) {
+      return supabaseResponse;
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', pathname);
@@ -59,18 +65,20 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to dashboard if accessing auth route while authenticated
   if (isAuthRoute && user) {
-    const url = request.nextUrl.clone();
-
-    // Get user role to redirect to appropriate dashboard
-    const { data: profile } = await supabase
+    // If Supabase session exists but no app profile, allow auth pages (e.g., user logged out of app but Supabase cookie remains)
+    const { data: profile, error } = await supabase
       .from('users')
       .select('role')
       .eq('auth_id', user.id)
       .single();
 
-    const role = profile?.role || user.user_metadata?.role || 'patient';
+    if (error || !profile) {
+      return supabaseResponse;
+    }
 
-    // Redirect based on role
+    const url = request.nextUrl.clone();
+    const role = profile.role || user.user_metadata?.role || 'patient';
+
     switch (role) {
       case 'admin':
         url.pathname = '/admin';
@@ -81,8 +89,11 @@ export async function middleware(request: NextRequest) {
       case 'doctor':
         url.pathname = '/doctor';
         break;
+      case 'patient':
+        url.pathname = '/patient';
+        break;
       default:
-        url.pathname = '/dashboard';
+        url.pathname = '/';
     }
 
     return NextResponse.redirect(url);
