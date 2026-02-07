@@ -8,10 +8,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { UserProfile, AuthTokens } from '@/types';
 import { loginApi, type AuthResponse } from '@/features/auth/api/login';
 
-// =============================================================================
-// Types
-// =============================================================================
-
+// User Roles
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'reception' | 'pharmacy' | 'admin';
 
 export interface AuthState {
@@ -34,10 +31,7 @@ export interface AuthState {
     clearError: () => void;
 }
 
-// =============================================================================
 // Role-Based Redirect Paths
-// =============================================================================
-
 export const ROLE_REDIRECT_PATHS: Record<UserRole, string> = {
     patient: '/patient',
     doctor: '/doctor',
@@ -54,10 +48,7 @@ export function getRedirectPath(role: UserRole | string): string {
     return ROLE_REDIRECT_PATHS[role as UserRole] || '/patient';
 }
 
-// =============================================================================
 // Store Implementation
-// =============================================================================
-
 export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
@@ -182,20 +173,14 @@ export const useAuthStore = create<AuthState>()(
     )
 );
 
-// =============================================================================
 // Selectors (for performance optimization)
-// =============================================================================
-
 export const selectUser = (state: AuthState) => state.user;
 export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
 export const selectIsLoading = (state: AuthState) => state.isLoading;
 export const selectError = (state: AuthState) => state.error;
 export const selectUserRole = (state: AuthState) => state.user?.role;
 
-// =============================================================================
 // Hooks (convenience wrappers)
-// =============================================================================
-
 export function useUser() {
     return useAuthStore(selectUser);
 }
