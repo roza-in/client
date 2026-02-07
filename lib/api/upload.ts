@@ -1,40 +1,31 @@
-import { api } from '@/config/api';
+import { api } from './client';
 
-export async function uploadDoctorAvatar(doctorId: string, file: File, onProgress?: (percent: number) => void) {
-  const fd = new FormData();
-  fd.append('file', file);
-  // Use XHR-based uploader to support progress events
-  return api.uploadWithProgress<{ url: string; path: string }>(`/uploads/doctors/${doctorId}/avatar`, fd, onProgress);
+export interface UploadResponse {
+    url: string;
+    path: string;
 }
 
-export async function uploadHospitalLogo(hospitalId: string, file: File, onProgress?: (percent: number) => void) {
-  const fd = new FormData();
-  fd.append('file', file);
-  return api.uploadWithProgress<{ url: string; path: string }>(`/uploads/hospitals/${hospitalId}/logo`, fd, onProgress);
+/**
+ * Upload a file to a specific bucket
+ * @param bucket - The storage bucket (e.g., 'doctors', 'hospitals')
+ * @param id - The identifier (folder name). For new entities, use 'temp' or a generated UUID.
+ * @param file - The file object to upload
+ */
+export async function uploadFile(
+    bucket: string,
+    id: string,
+    file: File
+): Promise<UploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return api.upload<UploadResponse>(`/uploads/${bucket}/${id}`, formData);
 }
 
-export async function uploadHospitalImages(hospitalId: string, files: File[], onProgress?: (percent: number) => void) {
-  const fd = new FormData();
-  files.forEach((f) => fd.append('files', f));
-  return api.uploadWithProgress<{ urls: string[] }>(`/uploads/hospitals/${hospitalId}/images`, fd, onProgress);
+/**
+ * Helper to upload a doctor avatar specifically
+ * Uses a temp folder if no ID is available yet
+ */
+export async function uploadDoctorAvatar(file: File, doctorId: string = 'temp'): Promise<UploadResponse> {
+    return uploadFile('doctors', doctorId, file);
 }
-
-export async function uploadPatientAvatar(userId: string, file: File, onProgress?: (percent: number) => void) {
-  const fd = new FormData();
-  fd.append('file', file);
-  return api.uploadWithProgress<{ url: string; path: string }>(`/uploads/patients/${userId}/avatar`, fd, onProgress);
-}
-
-export async function uploadGeneric(bucket: string, id: string, file: File, onProgress?: (percent: number) => void) {
-  const fd = new FormData();
-  fd.append('file', file);
-  return api.uploadWithProgress<{ url: string; path: string }>(`/uploads/${bucket}/${id}`, fd, onProgress);
-}
-
-export const uploadApi = {
-  uploadDoctorAvatar,
-  uploadHospitalLogo,
-  uploadHospitalImages,
-  uploadPatientAvatar,
-  uploadGeneric,
-};

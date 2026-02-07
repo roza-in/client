@@ -1,173 +1,196 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { StatCard } from '@/components/common/stat-card';
-import { PageLoader } from '@/components/ui/spinner';
-import { getDashboardStats, listUsers, listPendingVerifications, listTickets, getRevenueStats, type DashboardStats } from '@/lib/api/admin';
-import type { User } from '@/lib/types';
-import { ArrowRight, BriefcaseMedical, CircleAlert, Hospital, IndianRupee, Users } from 'lucide-react';
+import { Users, Building2, Stethoscope, CreditCard, AlertTriangle, ArrowRight } from 'lucide-react';
+import { StatsCard, StatsCardSkeleton } from '@/components/patients';
+import { AppointmentChart } from '@/components/admin/appointment-chart';
+import { routes } from '@/config';
+import { useAdminStats, usePendingVerifications } from '@/features/admin';
+import { formatDistanceToNow } from 'date-fns';
 
-export default function AdminPage() {
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentUsers, setRecentUsers] = useState<User[]>([]);
-  const [pendingHospitals, setPendingHospitals] = useState<any[]>([]);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [revenue, setRevenue] = useState<{ total: number } | null>(null);
+export default function AdminDashboardPage() {
+    const { data: stats, isLoading: statsLoading } = useAdminStats();
+    const { data: pendingData, isLoading: pendingLoading } = usePendingVerifications();
 
-  useEffect(() => {
-    let mounted = true;
+    const hospitals = pendingData?.hospitals || [];
+    const doctors = pendingData?.doctors || [];
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [d, uResp, hResp, tResp, rResp] = await Promise.all([
-          getDashboardStats(),
-          listUsers({ page: 1, limit: 5 }),
-          listPendingVerifications({ page: 1, limit: 5 }),
-          listTickets({ page: 1, limit: 5 }),
-          getRevenueStats({}),
-        ]);
+    const recentIssues = [
+        { id: '1', title: 'Payment failed for order #12345', priority: 'high', time: '1 hour ago' },
+        { id: '2', title: 'User complaint about doctor behavior', priority: 'medium', time: '3 hours ago' },
+        { id: '3', title: 'Video call connection issues reported', priority: 'low', time: '5 hours ago' },
+    ];
 
-        if (!mounted) return;
-        setStats(d as DashboardStats);
-        setRecentUsers(uResp.users || []);
-        setPendingHospitals(hResp.hospitals || []);
-        setTickets(tResp.tickets || []);
-        setRevenue(rResp || null);
-      } catch (err) {
-        // console.error(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
+    return (
+        <div className="space-y-6">
+            {/* Stats */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {statsLoading ? (
+                    <>
+                        <StatsCardSkeleton />
+                        <StatsCardSkeleton />
+                        <StatsCardSkeleton />
+                        <StatsCardSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <StatsCard title="Total Users" value={stats?.totalUsers || 0} icon={Users} variant="primary" />
+                        <StatsCard title="Hospitals" value={stats?.totalHospitals || 0} icon={Building2} />
+                        <StatsCard title="Doctors" value={stats?.totalDoctors || 0} icon={Stethoscope} />
+                        <StatsCard title="Total Appointments" value={stats?.totalAppointments || 0} icon={CreditCard} variant="success" />
+                    </>
+                )}
+            </div>
 
-    load();
+            <div className="grid gap-6 lg:grid-cols-12">
+                {/* Main Content */}
+                <div className="lg:col-span-8 space-y-6">
+                    {/* Appointment Chart */}
+                    <AppointmentChart />
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+                    {/* Recent Issues */}
+                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b">
+                            <div>
+                                <h2 className="text-lg font-semibold">Recent Platform Issues</h2>
+                                <p className="text-sm text-muted-foreground">Monitor and resolve system alerts</p>
+                            </div>
+                            <Link
+                                href={routes.admin.support}
+                                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                            >
+                                View all support tickets
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
 
-  if (loading) return <PageLoader />;
-
-  return (
-    <div className="min-h-screen space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Users" value={stats?.totalUsers ?? 0} icon={Users} description="Total registered users" />
-        <StatCard title="Hospitals" value={stats?.totalHospitals ?? 0} icon={Hospital} description="Registered hospitals" />
-        <StatCard title="Doctors" value={stats?.totalDoctors ?? 0} icon={BriefcaseMedical} description="Registered doctors" />
-        <StatCard title="Revenue" value={revenue?.total ?? stats?.totalRevenue ?? 0} icon={IndianRupee} format="currency" description="Total collected" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-4">
-          <section className="bg-card p-4 rounded-md">
-            <h2 className="text-lg font-medium mb-2">Recent Users</h2>
-            {recentUsers.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No recent users</div>
-            ) : (
-              <ul className="space-y-2">
-                {recentUsers.map((u) => (
-                  <li key={u.id} className="flex items-center justify-between">
-                    <div>
-                      <Link href={`/admin/users/${u.id}`} className="font-medium">{u.full_name ?? u.email ?? u.phone}</Link>
-                      <div className="text-xs text-muted-foreground">{u.email ?? u.phone}</div>
+                        <div className="divide-y">
+                            {recentIssues.map((issue) => (
+                                <div
+                                    key={issue.id}
+                                    className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors group"
+                                >
+                                    <div className={`flex h-11 w-11 items-center justify-center rounded-full shrink-0 ${issue.priority === 'high'
+                                        ? 'bg-red-100 dark:bg-red-900/30 text-red-600'
+                                        : issue.priority === 'medium'
+                                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600'
+                                        }`}>
+                                        <AlertTriangle className="h-5 w-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                                            {issue.title}
+                                        </p>
+                                        <div className="flex items-center gap-3 mt-1 text-xs">
+                                            <span className={`font-semibold capitalize ${issue.priority === 'high'
+                                                ? 'text-red-600'
+                                                : issue.priority === 'medium'
+                                                    ? 'text-yellow-600'
+                                                    : 'text-slate-500'
+                                                }`}>
+                                                {issue.priority} Priority
+                                            </span>
+                                            <span className="text-muted-foreground">•</span>
+                                            <span className="text-muted-foreground">{issue.time}</span>
+                                        </div>
+                                    </div>
+                                    <button className="hidden sm:inline-flex items-center justify-center rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition-all active:scale-95">
+                                        View Details
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{u.created_at ? new Date(u.created_at).toLocaleString() : '—'}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+                </div>
 
-          <section className="bg-card p-4 rounded-md">
-            <h2 className="text-lg font-medium mb-2">Open Support Tickets</h2>
-            {tickets.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No open tickets</div>
-            ) : (
-              <ul className="space-y-2">
-                {tickets.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{t.subject || `#${t.id}`}</div>
-                      <div className="text-xs text-muted-foreground">{t.user?.email ?? t.userId}</div>
+                {/* Right Sidebar - Pending Verifications */}
+                <div className="lg:col-span-4 space-y-6">
+                    {/* Hospitals */}
+                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                        <div className="p-5 border-b flex items-center justify-between bg-muted/30">
+                            <h2 className="font-semibold flex items-center gap-2 text-sm">
+                                <Building2 className="h-4 w-4 text-primary" />
+                                Pending Hospitals
+                            </h2>
+                            <Link
+                                href={routes.admin.hospitals}
+                                className="text-xs text-primary hover:underline font-medium"
+                            >
+                                View all
+                            </Link>
+                        </div>
+                        <div className="divide-y">
+                            {pendingLoading ? (
+                                <div className="p-10 text-center text-sm text-muted-foreground">Loading...</div>
+                            ) : hospitals.length === 0 ? (
+                                <div className="p-10 text-center text-sm text-muted-foreground italic">No pending requests</div>
+                            ) : (
+                                hospitals.slice(0, 3).map((item: any) => (
+                                    <div key={item.id} className="p-4 hover:bg-muted/20 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-sm truncate">{item.name}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                                                </p>
+                                            </div>
+                                            <Link
+                                                href={`${routes.admin.hospitals}/${item.id}`}
+                                                className="shrink-0 rounded-md bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all"
+                                            >
+                                                Review
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{t.status}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+
+                    {/* Doctors */}
+                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                        <div className="p-5 border-b flex items-center justify-between bg-muted/30">
+                            <h2 className="font-semibold flex items-center gap-2 text-sm">
+                                <Stethoscope className="h-4 w-4 text-primary" />
+                                Pending Doctors
+                            </h2>
+                            <Link
+                                href={routes.admin.doctors}
+                                className="text-xs text-primary hover:underline font-medium"
+                            >
+                                View all
+                            </Link>
+                        </div>
+                        <div className="divide-y">
+                            {pendingLoading ? (
+                                <div className="p-10 text-center text-sm text-muted-foreground">Loading...</div>
+                            ) : doctors.length === 0 ? (
+                                <div className="p-10 text-center text-sm text-muted-foreground italic">No pending requests</div>
+                            ) : (
+                                doctors.slice(0, 3).map((item: any) => (
+                                    <div key={item.id} className="p-4 hover:bg-muted/20 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-sm truncate">{item.user?.name || `Dr. ${item.id.slice(0, 5)}`}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                                                </p>
+                                            </div>
+                                            <Link
+                                                href={`${routes.admin.doctors}/${item.id}`}
+                                                className="shrink-0 rounded-md bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all"
+                                            >
+                                                Review
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <aside className="space-y-4">
-          <section className="bg-card p-4 shadow-xs rounded-md">
-            <div className='flex items-center justify-between border-b pb-2 mb-4'>
-              <h3 className="text-lg font-medium mb-2">Pending Hospital</h3>
-              <Link href="/admin/hospitals/?status=pending" className="text-primary"><ArrowRight /></Link>
-            </div>
-            <div className='min-h-32'>
-              {pendingHospitals.length === 0 ? (
-                <div className="h-full text-center text-sm mt-18 text-muted-foreground">
-                  <CircleAlert className='mx-auto mb-2' />
-                  No pending Verifications
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {pendingHospitals.map((h) => (
-                    <li key={h.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">{h.name}</div>
-                        <div className="text-xs text-muted-foreground">{h.city || h.address || '—'}</div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString()}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-
-          <section className="bg-card p-4 min-h-40 shadow-xs rounded-md">
-            <div className='flex items-center justify-between border-b pb-2 mb-4'>
-              <h3 className="text-lg font-medium mb-2">Pending Doctor</h3>
-              <Link href="/admin/doctors/?status=pending" className="text-primary"><ArrowRight /></Link>
-            </div>
-            <div className='min-h-32'>
-              {pendingHospitals.length === 0 ? (
-                <div className="h-full text-center text-sm mt-18 text-muted-foreground">
-                  <CircleAlert className='mx-auto mb-2' />
-                  No pending Verifications
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {pendingHospitals.map((h) => (
-                    <li key={h.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">{h.name}</div>
-                        <div className="text-xs text-muted-foreground">{h.city || h.address || '—'}</div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString()}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-
-          <section className="bg-card p-4 rounded-md">
-            <h3 className="text-lg font-medium mb-2 border-b pb-2">Quick Actions</h3>
-            <div className="flex flex-col gap-2">
-              <Link href="/admin/users" className="text-sm text-primary">Manage Users</Link>
-              <Link href="/admin/hospitals" className="text-sm text-primary">Review Hospitals</Link>
-              <Link href="/admin/tickets" className="text-sm text-primary">View Tickets</Link>
-              <Link href="/admin/settings" className="text-sm text-primary">System Settings</Link>
-            </div>
-          </section>
-        </aside>
-      </div>
-    </div>
-  );
+    );
 }

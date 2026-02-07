@@ -1,139 +1,189 @@
 'use client';
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TablePagination, TableRow } from "@/components/ui";
-import { doctorApi } from "@/lib/api";
-import { Edit, Eye, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 
+import Link from 'next/link';
+import { LoadingSpinner } from '@/components/shared';
+import { Plus, Star, UserPlus } from 'lucide-react';
+import { useHospitalDoctors } from '@/features/hospitals/hooks/use-hospital-doctors';
 
-function HospitalDoctorsPage() {
-  const [doctors, setDoctors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState('');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+export default function HospitalDoctorsPage() {
+    const { data, isLoading, error } = useHospitalDoctors();
+    const doctors = data?.doctors || [];
 
-  const load = async (p = page, l = limit, q = search) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await doctorApi.list({ page: p, limit: l, search: q });
-      setDoctors(res.doctors || []);
-      setTotal(res.meta?.total || 0);
-    } catch (err: any) {
-      console.error('Failed to load doctors', err);
-      setError(err.message || 'Failed to load doctors');
-    } finally {
-      setLoading(false);
+    if (isLoading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
     }
-  };
 
-  useEffect(() => {
-    load(page, limit, search);
-  }, [page, limit, search]);
-
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm('Delete this doctor? This action cannot be undone.');
-    if (!confirmed) return;
-    try {
-      setDeletingId(id);
-      await doctorApi.delete(id);
-      setDoctors(prev => prev.filter(d => d.id !== id));
-      setTotal(prev => Math.max(0, prev - 1));
-    } catch (err) {
-      console.error(err);
-      alert((err as any)?.message || 'Failed to delete doctor');
-    } finally {
-      setDeletingId(null);
+    if (error) {
+        return (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
+                <h2 className="font-semibold">Error loading doctors</h2>
+                <p className="text-sm">Please try refreshing the page.</p>
+            </div>
+        );
     }
-  };
 
-  return (
-    <div>
-      <section className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">Doctors Management</h1>
-          <p className="text-sm text-muted-foreground">Manage doctors for your hospital</p>
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold">Doctor Management</h1>
+                    <p className="text-sm text-muted-foreground">Manage your doctors and their profiles</p>
+                </div>
+                <Link
+                    href="/hospital/doctors/add"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                    <Plus className="h-4 w-4" />
+                    Add Doctor
+                </Link>
+            </div>
+
+            {/* Content */}
+            {doctors.length === 0 ? (
+                <div className="rounded-xl border-2 border-dashed p-12 text-center">
+                    <UserPlus className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <h3 className="font-semibold text-lg mb-1">No doctors yet</h3>
+                    <p className="text-muted-foreground text-sm mb-4">Add your first doctor to start accepting appointments</p>
+                    <Link
+                        href="/hospital/doctors/add"
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Doctor
+                    </Link>
+                </div>
+            ) : (
+                <>
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-3">
+                        {doctors.map((doctor: any) => (
+                            <Link
+                                key={doctor.id}
+                                href={`/hospital/doctors/${doctor.id}`}
+                                className="block rounded-xl border p-4 hover:bg-muted/20 transition-colors"
+                            >
+                                <div className="flex items-start gap-3">
+                                    {doctor.og_image_url ? (
+                                        <img
+                                            src={doctor.og_image_url}
+                                            alt=""
+                                            className="h-12 w-12 rounded-full object-cover ring-2 ring-background shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold shrink-0">
+                                            {(doctor.users?.name || 'D').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p className="font-medium">Dr. {doctor.users?.name || 'Unknown'}</p>
+                                                <p className="text-sm text-muted-foreground">{doctor.specializations?.name || 'General'}</p>
+                                            </div>
+                                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0 ${doctor.is_active
+                                                ? 'bg-green-50 text-green-700'
+                                                : doctor.verification_status === 'pending'
+                                                    ? 'bg-yellow-50 text-yellow-700'
+                                                    : 'bg-gray-50 text-gray-600'
+                                                }`}>
+                                                {doctor.is_active ? 'Active' : doctor.verification_status === 'pending' ? 'Pending' : 'Inactive'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-2 text-sm">
+                                            <span className="font-semibold">₹{doctor.consultation_fee_in_person || 0}</span>
+                                            <span className="flex items-center gap-1 text-muted-foreground">
+                                                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                                {doctor.rating?.toFixed(1) || '0.0'}
+                                            </span>
+                                            <span className="text-muted-foreground">{doctor.experience_years || 0}y exp</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block rounded-xl border overflow-hidden">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b bg-muted/40">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Doctor</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Specialization</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Fee</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Rating</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y bg-background">
+                                {doctors.map((doctor: any) => (
+                                    <tr key={doctor.id} className="hover:bg-muted/20 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                {doctor.og_image_url ? (
+                                                    <img
+                                                        src={doctor.og_image_url}
+                                                        alt=""
+                                                        className="h-10 w-10 rounded-full object-cover ring-2 ring-background"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-sm">
+                                                        {(doctor.users?.name || 'D').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="font-medium text-sm">Dr. {doctor.users?.name || 'Unknown'}</p>
+                                                    <p className="text-xs text-muted-foreground">{doctor.experience_years || 0} yrs experience</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="text-sm font-medium">{doctor.specializations?.name || '—'}</p>
+                                            {doctor.qualifications?.[0] && (
+                                                <p className="text-xs text-muted-foreground">{doctor.qualifications[0]}</p>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="text-sm font-semibold">₹{doctor.consultation_fee_in_person || 0}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-1">
+                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                <span className="text-sm font-medium">{doctor.rating?.toFixed(1) || '0.0'}</span>
+                                                <span className="text-xs text-muted-foreground">({doctor.total_ratings || 0})</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${doctor.is_active
+                                                ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                                                : doctor.verification_status === 'pending'
+                                                    ? 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20'
+                                                    : 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
+                                                }`}>
+                                                {doctor.is_active ? 'Active' : doctor.verification_status === 'pending' ? 'Pending' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Link
+                                                href={`/hospital/doctors/${doctor.id}`}
+                                                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                                            >
+                                                View →
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            placeholder="Search doctors..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="border rounded px-3 py-1"
-          />
-          <Link className="bg-primary text-secondary px-4 py-2 rounded" href="/hospital/doctors/new">Add New Doctor</Link>
-        </div>
-      </section>
-
-      <section>
-        {loading ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div className="text-destructive">{error}</div>
-        ) : (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Specialization</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Appointments</TableHead>
-                  <TableHead>Verification</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {doctors.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5}>
-                      <div className="py-6 text-center text-sm text-muted-foreground">No doctors found</div>
-                    </TableCell>
-                  </TableRow>
-                )}
-                {doctors.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <div className="font-medium">{d.full_name || d.user?.full_name || '—'}</div>
-                        <div className="text-xs text-muted-foreground">{d.user?.email || d.user?.phone || ''}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{d.specialization || d.specialization_name || 'General'}</TableCell>
-                    <TableCell>{d.is_active ? 'Active' : 'Inactive'}</TableCell>
-                    <TableCell>{d.total_consultations ?? 0}</TableCell>
-                    <TableCell>{d.verification_status || 'pending'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Link href={`/hospital/doctors/${d.id}`} className="btn btn-sm btn-ghost p-2" aria-label="View"><Eye size={16} /></Link>
-                        <Link href={`/hospital/doctors/${d.id}/edit`} className="btn btn-sm btn-ghost p-2" aria-label="Edit"><Edit size={16} /></Link>
-                        <button className="btn btn-sm btn-ghost p-2 text-destructive" onClick={() => handleDelete(d.id)} disabled={deletingId === d.id} aria-label="Delete">
-                          {deletingId === d.id ? 'Deleting...' : <Trash2 size={16} />}
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            <TablePagination
-              currentPage={page}
-              totalPages={Math.max(1, Math.ceil(total / limit))}
-              pageSize={limit}
-              totalItems={total}
-              onPageChange={(p) => setPage(p)}
-              onPageSizeChange={(s) => { setLimit(s); setPage(1); }}
-            />
-          </>
-        )}
-      </section>
-    </div>
-  );
+    );
 }
-
-export default HospitalDoctorsPage;

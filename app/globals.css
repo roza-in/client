@@ -1,261 +1,244 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* ============================================
-   ROZX DESIGN SYSTEM
-   Calm • Healthcare • Professional
-   ============================================ */
+@theme {
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-:root {
-  /* --------------------------------------------
-     LIGHT MODE (Default)
-  -------------------------------------------- */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
 
-  --background: #F8FAFC;        /* slate-50 */
-  --foreground: #0F172A;        /* slate-900 */
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
 
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
 
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
 
-  /* Brand */
-  --primary: #0F766E;           /* teal-700 */
-  --primary-foreground: #FFFFFF;
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
 
-  --secondary: #F1F5F9;         /* slate-100 */
-  --secondary-foreground: #1E293B;
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
 
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;  /* slate-500 */
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
 
-  --accent: #E2E8F0;            /* slate-200 */
-  --accent-foreground: #1E293B;
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
 
-  /* Semantic */
-  --success: #22C55E;
-  --success-foreground: #FFFFFF;
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
 
-  --warning: #F59E0B;
-  --warning-foreground: #18181B;
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
 
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
 
-  --info: #3B82F6;
-  --info-foreground: #FFFFFF;
+        to {
+            opacity: 1;
+        }
+    }
 
-  /* UI */
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #0F766E;
+    @keyframes slide-up {
+        from {
+            transform: translateY(10px);
+            opacity: 0;
+        }
 
-  /* Radius */
-  --radius: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+    @keyframes slide-down {
+        from {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
 
-  /* Shadows (Soft, Enterprise) */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 6px 12px rgba(0,0,0,0.06);
-  --shadow-lg: 0 12px 24px rgba(0,0,0,0.08);
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 
-  /* Motion */
-  --transition-fast: 120ms ease-out;
-  --transition-base: 180ms ease-out;
-  --transition-slow: 260ms ease-out;
+    @keyframes pulse-soft {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    --animate-fade-in: fade-in 0.3s ease-out;
+    --animate-slide-up: slide-up 0.3s ease-out;
+    --animate-slide-down: slide-down 0.3s ease-out;
+    --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 }
 
-/* ============================================
-   DARK MODE (Night-shift friendly)
-   Supports both system preference and class toggle
-   ============================================ */
+@layer base {
+    :root {
+        /* Core */
+        --background: #ffffff;
+        --foreground: #020617;
 
-.dark,
-[data-theme="dark"] {
-  --background: #020617;          /* deep navy */
-  --foreground: #E2E8F0;          /* slate-200 */
+        /* Surfaces */
+        --card: #ffffff;
+        --card-foreground: #020617;
+        --popover: #ffffff;
+        --popover-foreground: #020617;
 
-  --card: #0F172A;                /* slate-900 */
-  --card-foreground: #E2E8F0;
+        /* Brand */
+        --primary: #10b981;
+        /* emerald-500 */
+        --primary-foreground: #f8fafc;
 
-  --popover: #0F172A;
-  --popover-foreground: #E2E8F0;
+        /* UI */
+        --secondary: #f1f5f9;
+        --secondary-foreground: #020617;
 
-  --primary: #14B8A6;             /* teal-500 */
-  --primary-foreground: #020617;
+        --muted: #f1f5f9;
+        --muted-foreground: #64748b;
 
-  --secondary: #1E293B;           /* slate-800 */
-  --secondary-foreground: #E2E8F0;
+        --accent: #f1f5f9;
+        --accent-foreground: #020617;
 
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;    /* slate-400 */
+        /* States */
+        --destructive: #ef4444;
+        --destructive-foreground: #f8fafc;
 
-  --accent: #334155;              /* slate-700 */
-  --accent-foreground: #E2E8F0;
+        /* Borders & focus */
+        --border: #e2e8f0;
+        --input: #e2e8f0;
+        --ring: #10b981;
 
-  --success: #16A34A;
-  --warning: #EAB308;
-  --destructive: #DC2626;
-  --info: #38BDF8;
+        --radius: 0.75rem;
+    }
 
-  --border: #334155;
-  --input: #334155;
-  --ring: #14B8A6;
+    .dark {
+        --background: #020617;
+        --foreground: #f8fafc;
+
+        --card: #020617;
+        --card-foreground: #f8fafc;
+        --popover: #020617;
+        --popover-foreground: #f8fafc;
+
+        --primary: #34d399;
+        /* emerald-400 */
+        --primary-foreground: #020617;
+
+        --secondary: #1e293b;
+        --secondary-foreground: #f8fafc;
+
+        --muted: #1e293b;
+        --muted-foreground: #94a3b8;
+
+        --accent: #1e293b;
+        --accent-foreground: #f8fafc;
+
+        --destructive: #7f1d1d;
+        --destructive-foreground: #f8fafc;
+
+        --border: #1e293b;
+        --input: #1e293b;
+        --ring: #34d399;
+    }
 }
 
-/* Also support system preference */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --background: #020617;          /* deep navy */
-    --foreground: #E2E8F0;          /* slate-200 */
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
 
-    --card: #0F172A;                /* slate-900 */
-    --card-foreground: #E2E8F0;
-
-    --popover: #0F172A;
-    --popover-foreground: #E2E8F0;
-
-    --primary: #14B8A6;             /* teal-500 */
-    --primary-foreground: #020617;
-
-    --secondary: #1E293B;           /* slate-800 */
-    --secondary-foreground: #E2E8F0;
-
-    --muted: #1E293B;
-    --muted-foreground: #94A3B8;    /* slate-400 */
-
-    --accent: #334155;              /* slate-700 */
-    --accent-foreground: #E2E8F0;
-
-    --success: #16A34A;
-    --warning: #EAB308;
-    --destructive: #DC2626;
-    --info: #38BDF8;
-
-    --border: #334155;
-    --input: #334155;
-    --ring: #14B8A6;
-  }
+    body {
+        @apply bg-background text-foreground antialiased selection:bg-primary/20;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
 }
 
-/* ============================================
-   Tailwind Theme Mapping
-   ============================================ */
+/* Custom Scrollbar */
+@layer utilities {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
 
-  --radius: var(--radius);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
+    ::-webkit-scrollbar-thumb {
+        @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+    }
+
+    .glass {
+        @apply bg-background/80 backdrop-blur-md border border-border/50;
+    }
+
+    .container {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .focus-ring {
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
-/* ============================================
-   Base Styles
-   ============================================ */
+/* Status Colors */
+@layer utilities {
+    .status-scheduled {
+        @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+    }
 
-* {
-  border-color: var(--border);
+    .status-confirmed {
+        @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400;
+    }
+
+    .status-completed {
+        @apply bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300;
+    }
+
+    .status-cancelled {
+        @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
+    }
+
+    .status-pending {
+        @apply bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400;
+    }
 }
 
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  scroll-behavior: smooth;
-}
+@media print {
+    .no-print {
+        display: none !important;
+    }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-weight: 400;
-  min-height: 100vh;
-  margin: 0;
-}
+    .print-only {
+        display: block !important;
+    }
 
-/* ============================================
-   Typography
-   ============================================ */
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
-}
-
-p {
-  line-height: 1.7;
-}
-
-/* ============================================
-   Accessibility
-   ============================================ */
-
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* ============================================
-   Selection
-   ============================================ */
-
-::selection {
-  background-color: #99F6E4; /* teal-200 */
-  color: #042F2E;
-}
-
-/* ============================================
-   Scrollbar
-   ============================================ */
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 6px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+    body {
+        background: #ffffff !important;
+    }
 }

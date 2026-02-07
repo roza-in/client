@@ -1,0 +1,130 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "framework": "nextjs",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "installCommand": "npm install",
+    "regions": [
+        "bom1"
+    ],
+    "git": {
+        "deploymentEnabled": {
+            "main": true,
+            "develop": true
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/:path*",
+            "destination": "/patient/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "patient.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/doctor/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "doctor.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/hospital/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "hospital.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/reception/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "reception.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/admin/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "admin.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/consultation/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "meet.rozx.in"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "destination": "/pharmacy/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "pharmacy.rozx.in"
+                }
+            ]
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                },
+                {
+                    "key": "Permissions-Policy",
+                    "value": "camera=(self), microphone=(self), geolocation=(self)"
+                }
+            ]
+        },
+        {
+            "source": "/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "rozx.in"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Strict-Transport-Security",
+                    "value": "max-age=31536000; includeSubDomains; preload"
+                }
+            ]
+        }
+    ]
+}

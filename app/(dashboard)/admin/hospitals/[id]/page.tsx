@@ -1,520 +1,293 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+
+import React, { use } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Building2, Loader2, Calendar, Users, Activity, MapPin, ExternalLink, Trash2, AlertTriangle, X } from 'lucide-react';
+import { routes } from '@/config';
+import { useHospital, useHospitalDoctors, useHospitalAppointments } from '@/features/hospitals/hooks/use-hospitals';
+import { verifyHospital, deleteHospital, updateHospitalStatus } from '@/features/admin/api/admin';
+import { HospitalDetailsTabs } from '@/components/admin/hospital-details-tabs';
 import { toast } from 'sonner';
-import { Hospital } from '@/types/hospital';
-import { hospitalApi } from '@/lib/api/hospital';
-import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle, Avatar } from '@/components/ui';
-import { Upload } from 'lucide-react';
+import { format } from 'date-fns';
 
-function AdminHospitalActionsPage() {
-  const params = useParams();
-  const hospitalId = params?.id as string | undefined;
-  const [hospitalData, setHospitalData] = useState<Hospital | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-  type HospitalForm = Partial<Hospital> & {
-    admin?: Record<string, any>;
-    images?: string[];
-    logo_url?: string;
-    cover_image_url?: string;
-    brand_color?: string;
-    registration_number?: string | null;
-    license_number?: string | null;
-    pan?: string | null;
-    landmark?: string | null;
-    alternate_phone?: string | null;
-    meta_title?: string | null;
-    meta_description?: string | null;
-    [key: string]: any;
-  };
-  const [formData, setFormData] = useState<HospitalForm>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const logoInputRef = useRef<HTMLInputElement | null>(null);
-  const imagesInputRef = useRef<HTMLInputElement | null>(null);
-  const fetchHospitalData = async (id: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await hospitalApi.get(id);
-      // Map server `specializations` to client `specialties` for the form
-      const mapped = { ...(data as any) } as any;
-      if ((data as any).specializations !== undefined && (data as any).specialties === undefined) {
-        mapped.specialties = (data as any).specializations;
-      }
-      // Remove original server key so we don't send both `specializations` and `specialties`
-      if (mapped.specializations !== undefined) delete mapped.specializations;
-      setHospitalData(mapped as Hospital);
-      setFormData(mapped as any);
-      setIsDirty(false);
-    } catch (err) {
-      setError('Failed to load hospital data.');
-    } finally {
-      setLoading(false);
-    }
-  };
+interface PageProps {
+    params: Promise<{ id: string }>;
+}
 
+export default function AdminHospitalDetailPage({ params }: PageProps) {
+    const { id } = use(params);
+    const router = useRouter();
 
-  useEffect(() => {
-    if (hospitalId) fetchHospitalData(hospitalId);
-  }, [hospitalId]);
+    // Core data fetching
+    const { data: hospital, isLoading: isHospitalLoading, error: hospitalError, refetch: refetchHospital } = useHospital(id);
+    const { data: doctorsData, isLoading: isDoctorsLoading } = useHospitalDoctors(id);
+    const { data: appointmentsData, isLoading: isAppointmentsLoading } = useHospitalAppointments(id, { limit: 50 });
 
-  const handleChange = (key: string, value: any) => {
-    setFormData((s) => ({ ...(s || {}), [key]: value }));
-    setIsDirty(true);
-    validateField(key as string, value);
-  };
+    // Auto-transition to under_review if pending
+    React.useEffect(() => {
+        if (hospital && (hospital as any).verification_status === 'pending') {
+            verifyHospital(id, 'under_review')
+                .then(() => refetchHospital())
+                .catch(err => console.error('Failed to auto-update status:', err));
+        }
+    }, [hospital, id, refetchHospital]);
 
-  const handleAdminChange = (key: string, value: any) => {
-    setFormData((s) => ({ ...(s || {}), admin: { ...(s?.admin as any || {}), [key]: value } }));
-    setIsDirty(true);
-  };
+    const [isActionLoading, setIsActionLoading] = React.useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
-  const SPECIALIZATIONS = [
-    ['general_medicine','General Medicine','General health concerns and primary care',1],
-    ['cardiology','Cardiology','Heart and cardiovascular system',2],
-    ['orthopedics','Orthopedics','Bones, joints, and muscles',3],
-    ['pediatrics','Pediatrics','Child healthcare',4],
-    ['gynecology','Gynecology & Obstetrics','Women health and pregnancy',5],
-    ['dermatology','Dermatology','Skin, hair, and nails',6],
-    ['ent','ENT','Ear, Nose, and Throat',7],
-    ['ophthalmology','Ophthalmology','Eye care',8],
-    ['dentistry','Dentistry','Dental and oral health',9],
-    ['neurology','Neurology','Brain and nervous system',10],
-    ['psychiatry','Psychiatry','Mental health',11],
-    ['gastroenterology','Gastroenterology','Digestive system',12],
-    ['pulmonology','Pulmonology','Lungs and respiratory system',13],
-    ['nephrology','Nephrology','Kidneys',14],
-    ['urology','Urology','Urinary system',15],
-    ['endocrinology','Endocrinology','Hormones and metabolism',16],
-    ['oncology','Oncology','Cancer treatment',17],
-    ['rheumatology','Rheumatology','Autoimmune and joint diseases',18],
-    ['general_surgery','General Surgery','Surgical procedures',19],
-    ['physiotherapy','Physiotherapy','Physical rehabilitation',20],
-    ['ayurveda','Ayurveda','Traditional Indian medicine',21],
-    ['homeopathy','Homeopathy','Homeopathic medicine',22],
-  ] as const;
+    const handleVerify = async (status: 'verified' | 'rejected' | 'under_review', remarks?: string) => {
+        setIsActionLoading(true);
+        try {
+            await verifyHospital(id, status, remarks);
+            const statusMsg = status === 'verified' ? 'verified' : status === 'rejected' ? 'rejected' : 'marked as under review';
+            toast.success(`Hospital ${statusMsg} successfully`);
+            refetchHospital();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update verification status');
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
 
-  const toggleSpecialization = (key: string) => {
-    const current = (formData.specialties || []) as string[];
-    const exists = current.includes(key);
-    const next = exists ? current.filter((s) => s !== key) : [...current, key];
-    handleChange('specialties', next);
-  };
+    const handleDelete = async () => {
+        setIsActionLoading(true);
+        try {
+            await deleteHospital(id);
+            toast.success("Hospital deleted successfully");
+            router.push(routes.admin.hospitals);
+        } catch (err: any) {
+            toast.error(err.message || "Failed to delete hospital");
+        } finally {
+            setIsActionLoading(false);
+            setShowDeleteConfirm(false);
+        }
+    };
 
-  const [specQuery, setSpecQuery] = useState('');
-  const suggestions = SPECIALIZATIONS.filter(([key, label]) => {
-    const q = specQuery.trim().toLowerCase();
-    if (!q) return true; // show available services when no query
-    return String(label).toLowerCase().includes(q) || String(key).toLowerCase().includes(q);
-  }).filter(([key]) => !((formData.specialties || []) as string[]).includes(String(key))).slice(0, 8);
+    const handleToggleStatus = async (isActive: boolean) => {
+        setIsActionLoading(true);
+        try {
+            await updateHospitalStatus(id, isActive);
+            toast.success(`Hospital ${isActive ? 'activated' : 'deactivated'} successfully`);
+            refetchHospital();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update hospital status');
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
 
-  const validateField = (key: string, value: any) => {
-    const e: Record<string, string> = { ...errors };
-    if (key === 'name') {
-      if (!value || String(value).trim() === '') e.name = 'Name is required';
-      else delete e.name;
-    }
-    if (key === 'email') {
-      if (!value) e.email = 'Email is required';
-      else if (!/^\S+@\S+\.\S+$/.test(String(value))) e.email = 'Invalid email';
-      else delete e.email;
-    }
-    if (key === 'phone') {
-      if (value && !/^[0-9+\s-]{6,15}$/.test(String(value))) e.phone = 'Invalid phone';
-      else delete e.phone;
-    }
-    if (key === 'website') {
-      // Accept URLs with or without protocol. We'll normalize before save.
-      if (value && !/^(https?:\/\/)?[^\s]+$/.test(String(value))) e.website = 'Invalid website URL';
-      else delete e.website;
-    }
-    setErrors(e);
-  };
-
-  const handleSave = async () => {
-    if (!hospitalId) return;
-    setSaving(true);
-    try {
-      validateField('name', formData.name);
-      validateField('email', formData.email);
-      if (Object.keys(errors).length > 0) {
-        toast.error('Please fix validation errors before saving');
-        setSaving(false);
-        return;
-      }
-
-      const payload = { ...(formData as any) } as any;
-      // Normalize website: if missing protocol, prefix with https://
-      if (payload.website && typeof payload.website === 'string' && !/^https?:\/\//i.test(payload.website)) {
-        payload.website = `https://${payload.website.trim()}`;
-        // clear website validation error if any
-        setErrors((prev) => { const p = { ...prev }; delete p.website; return p; });
-      }
-      // If client uses `specialties`, ensure we don't also send `specializations` to avoid duplicate keys
-      if (payload.specialties !== undefined && payload.specializations !== undefined) {
-        delete payload.specializations;
-      }
-      const updated = await hospitalApi.update(hospitalId, payload as any);
-      // Re-fetch full hospital so related fields (owner/admin, relations) are present
-      await fetchHospitalData(hospitalId);
-      setIsDirty(false);
-      toast.success('Hospital updated');
-    } catch (err) {
-      console.error(err);
-      toast.error(err instanceof Error ? err.message : 'Failed to update hospital');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) return <div className="p-8">Loading hospital...</div>;
-  if (error) return <div className="p-8 text-destructive">{error}</div>;
-
-  const formatDate = (d?: string | null) => {
-    if (!d) return '-';
-    try {
-      return new Date(d).toLocaleString();
-    } catch (e) {
-      return d;
-    }
-  };
-  return (
-    <div className="min-h-screen space-y-6">
-      {/* Header */}
-      <div className="bg-background rounded-lg flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-          <div>
-            <Avatar src={(hospitalData as any)?.logoUrl || null} alt={hospitalData?.name || 'Hospital'} size="xl" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold">{hospitalData?.name || '—'}</h1>
-            <div className="text-sm">{hospitalData?.slug || ''}</div>
-          </div>
-        </div>
-
-          <div className="flex items-center gap-3">
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${hospitalData?.verificationStatus === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-              {hospitalData?.verificationStatus === 'verified' ? 'Verified' : hospitalData?.verificationStatus || 'Pending'}
+    if (isHospitalLoading) {
+        return (
+            <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading hospital profile...</p>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={!isDirty || saving}>{saving ? 'Saving...' : 'Save'}</Button>
+        );
+    }
+
+    if (hospitalError || !hospital) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-center max-w-md mx-auto">
+                <div className="h-20 w-20 rounded-full bg-red-50 flex items-center justify-center mb-6">
+                    <Building2 className="h-10 w-10 text-red-400" />
+                </div>
+                <h2 className="text-xl font-bold mb-2">Hospital not found</h2>
+                <p className="text-muted-foreground mb-8">The hospital you are looking for might have been removed or the ID is incorrect.</p>
+                <Link
+                    href={routes.admin.hospitals}
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Hospitals
+                </Link>
             </div>
-          </div>
-      </div>
+        );
+    }
+    const h = hospital as any;
 
-      {/* Main content */}
-      {!hospitalData && <div className="p-6 bg-white rounded shadow">No hospital data available</div>}
+    return (
+        <div className="max-w-7xl mx-auto space-y-8 pb-20">
+            {/* Custom Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowDeleteConfirm(false)} />
+                    <div className="relative bg-card border shadow-2xl rounded-3xl p-8 max-w-md w-full animate-in zoom-in-95 duration-300">
+                        <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
+                        >
+                            <X className="h-5 w-5 text-muted-foreground" />
+                        </button>
 
-      {/* Edit form */}
-      {hospitalData && (
-        <div className="flex w-full gap-6">
-          <div className="w-3/5 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Hospital Details</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-2'>
-                <label className="flex flex-col">
-                  <span className="text-sm">Name</span>
-                  <Input value={formData.name || ''} onChange={(e) => handleChange('name' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Description</span>
-                  <Textarea value={formData.description || ''} onChange={(e) => handleChange('description' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Type</span>
-                  <Input value={formData.type || ''} onChange={(e) => handleChange('type' as any, e.target.value)} />
-                </label>
-                <div className="flex flex-col">
-                  <span className="text-sm">Specializations</span>
-                  <div className="mt-2">
-                    <div className="flex gap-2 flex-wrap mb-2">
-                      {(formData.specialties || []).map((s) => {
-                        const opt = SPECIALIZATIONS.find(([k]) => k === s);
-                        const label = opt ? String(opt[1]) : s;
-                        return (
-                          <div key={s} className="inline-flex items-center gap-2 bg-gray-100 px-2 py-1 rounded text-sm">
-                            <span>{label}</span>
-                            <button type="button" className="text-sm text-gray-600" onClick={() => toggleSpecialization(s)}>×</button>
-                          </div>
-                        );
-                      })}
+                        <div className="mb-6">
+                            <div className="h-14 w-14 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
+                                <AlertTriangle className="h-8 w-8 text-red-600" />
+                            </div>
+                            <h3 className="text-2xl font-black text-foreground mb-2">Delete Hospital?</h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                                You are about to permanently delete <span className="font-bold text-foreground">"{h.name}"</span>.
+                                This action will remove all associated data including doctors, schedules, and profile information.
+                                <span className="block mt-2 font-bold text-red-600">This cannot be undone.</span>
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={handleDelete}
+                                disabled={isActionLoading}
+                                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-red-200 active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                {isActionLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
+                                Delete Permanently
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                disabled={isActionLoading}
+                                className="w-full py-4 bg-muted/50 hover:bg-muted text-foreground font-bold rounded-2xl transition-all active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Profile Overview Card */}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex-1 space-y-8 w-full">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-start gap-5">
+                            <div className="relative shrink-0">
+                                <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-linear-to-br from-primary/10 to-primary/5 shadow-inner border border-primary/20 flex items-center justify-center overflow-hidden">
+                                    {h.logo_url ? (
+                                        <img src={h.logo_url} alt={h.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <Building2 className="h-10 w-10 md:h-12 md:w-12 text-primary/70" />
+                                    )}
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full border-4 border-background bg-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground shadow-sm">
+                                    {h.rating || '0.0'}
+                                </div>
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{h.name}</h1>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-muted-foreground">
+                                    <span className="capitalize px-2 py-0.5 rounded-full bg-muted/50 text-foreground text-[10px] font-bold">
+                                        {h.type?.replace('_', ' ')}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <MapPin className="h-3.5 w-3.5 opacity-60" />
+                                        {h.city}, {h.state}
+                                    </span>
+                                    {h.website && (
+                                        <a
+                                            href={h.website.startsWith('http') ? h.website : `https://${h.website}`}
+                                            target="_blank"
+                                            className="flex items-center gap-1 text-primary hover:underline"
+                                        >
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                            Website
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <span className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-black uppercase tracking-widest border-2 ${h.verification_status === 'verified'
+                                    ? 'bg-green-50 text-green-700 border-green-100/50'
+                                    : h.verification_status === 'pending'
+                                        ? 'bg-yellow-50 text-yellow-700 border-yellow-100/50'
+                                        : h.verification_status === 'under_review'
+                                            ? 'bg-blue-50 text-blue-700 border-blue-100/50'
+                                            : 'bg-red-50 text-red-700 border-red-100/50'
+                                    }`}>
+                                    <div className={`h-1.5 w-1.5 rounded-full ${h.verification_status === 'verified' ? 'bg-green-500' : h.verification_status === 'pending' ? 'bg-yellow-500' : h.verification_status === 'under_review' ? 'bg-blue-500' : 'bg-red-500'
+                                        } animate-pulse`} />
+                                    {h.verification_status?.replace('_', ' ')}
+                                </span>
+
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="p-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-all shadow-sm border border-red-100/50"
+                                    title="Delete Hospital"
+                                >
+                                    <Trash2 className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
+                                Registration date: {format(new Date(h.created_at), 'PP')}
+                            </p>
+                        </div>
                     </div>
 
-                    <Input
-                      placeholder="Start typing to search specializations"
-                      value={specQuery}
-                      onChange={(e) => setSpecQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (suggestions.length > 0) {
-                            const [key] = suggestions[0];
-                            toggleSpecialization(String(key));
-                            setSpecQuery('');
-                          }
-                        }
-                      }}
-                    />
+                    {/* Quick Stats Grid */}
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <StatCard
+                            label="Associated Doctors"
+                            value={h.totalDoctors || 0}
+                            icon={<Users className="h-4 w-4" />}
+                            color="blue"
+                        />
+                        <StatCard
+                            label="Total Appointments"
+                            value={h.totalAppointments || 0}
+                            icon={<Calendar className="h-4 w-4" />}
+                            color="green"
+                        />
+                        <StatCard
+                            label="Platform Commission"
+                            value={`${h.platform_commission_percent || 0}%`}
+                            icon={<Activity className="h-4 w-4" />}
+                            color="purple"
+                        />
+                        <StatCard
+                            label="Average Rating"
+                            value={h.rating || '0.0'}
+                            icon={<div className="text-yellow-500 text-xs">★</div>}
+                            color="yellow"
+                        />
+                    </div>
 
-                    {specQuery.trim() && suggestions.length > 0 && (
-                      <div className="mt-1 border rounded bg-white shadow-sm max-h-40 overflow-auto">
-                        {suggestions.map(([key, label]) => (
-                          <div key={String(key)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer" onMouseDown={(e) => { e.preventDefault(); toggleSpecialization(String(key)); setSpecQuery(''); }}>
-                            <div className="text-sm">{label}</div>
-                            <div className="text-xs text-muted-foreground">{String(key)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                    {/* Main Tabs Interaction */}
+                    <div className="pt-6">
+                        <HospitalDetailsTabs
+                            hospital={h}
+                            doctors={doctorsData?.doctors || []}
+                            appointments={appointmentsData?.appointments || []}
+                            onVerify={handleVerify}
+                            onToggleStatus={handleToggleStatus}
+                            isActionLoading={isActionLoading}
+                        />
+                    </div>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Registration & Compliance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <label className="flex flex-col">
-                  <span className="text-sm">Registration Number</span>
-                  <Input value={formData.registration_number || ''} onChange={(e) => handleChange('registration_number', e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">License Number</span>
-                  <Input value={formData.license_number || ''} onChange={(e) => handleChange('license_number', e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">GSTIN</span>
-                  <Input value={formData.gstin || ''} onChange={(e) => handleChange('gstin' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">PAN</span>
-                  <Input value={formData.pan || ''} onChange={(e) => handleChange('pan' as any, e.target.value)} />
-                </label>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Location</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className='w-full flex gap-4'>
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">Address</span>
-                    <Input value={formData.address_line1 || ''} onChange={(e) => handleChange('address_line1', e.target.value)} />
-                  </label>
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">Landmark</span>
-                    <Input value={formData.landmark || ''} onChange={(e) => handleChange('landmark' as any, e.target.value)} />
-                  </label>
-                </div>
-                
-                <div className='w-full flex gap-4'> 
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">City</span>
-                    <Input value={formData.city || ''} onChange={(e) => handleChange('city' as any, e.target.value)} />
-                  </label>
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">State</span>
-                    <Input value={formData.state || ''} onChange={(e) => handleChange('state' as any, e.target.value)} />
-                  </label>
-                </div>
-                <div className='w-full flex gap-4'>
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">Country</span>
-                    <Input value={formData.country || ''} onChange={(e) => handleChange('country' as any, e.target.value)} />
-                  </label>
-                  <label className="flex w-1/2 flex-col">
-                    <span className="text-sm">Pincode</span>
-                    <Input value={formData.pincode || ''} onChange={(e) => handleChange('pincode' as any, e.target.value)} />
-                  </label>
-                </div>
-                
-              </CardContent>
-            </Card>
-          </div>
-          <div className="w-2/5 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Owner</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <label className="flex flex-col"> 
-                  <span className="text-sm">Name</span>
-                  <Input value={(formData.admin as any)?.full_name || ''} onChange={(e) => handleAdminChange('full_name', e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Email</span>
-                  <Input value={(formData.admin as any)?.email || ''} onChange={(e) => handleAdminChange('email', e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Phone</span>
-                  <Input value={(formData.admin as any)?.phone || ''} onChange={(e) => handleAdminChange('phone', e.target.value)} />
-                </label>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Verification</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <label className="flex flex-col">
-                  <span className="text-sm">Status</span>
-                  <select className="input" value={String(formData.is_active ?? false)} onChange={(e) => handleChange('is_active', e.target.value === 'true')}>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                  </select>
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Featured</span>
-                  <select className="input" value={String(formData.is_featured ?? false)} onChange={(e) => handleChange('is_featured', e.target.value === 'true')}>
-                    <option value="true">Featured</option>
-                    <option value="false">Not Featured</option>
-                  </select>
-                </label>
-
-                <label className="flex flex-col">
-                  <span className="text-sm">Verification Status</span>
-                  <select className="input" value={formData.verification_status || 'pending'} onChange={(e) => handleChange('verification_status', e.target.value)}>
-                    <option value="pending">Pending</option>
-                    <option value="verified">Verified</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                </label>
-                {formData.verification_status === 'rejected' && ( 
-                  <label className="flex flex-col mt-2">
-                    <span className="text-sm">Rejection Reason</span>
-                    <Textarea value={formData.rejection_reason || ''} onChange={(e) => handleChange('rejection_reason', e.target.value)} />
-                  </label>
-                 )}
-                {formData.is_verified && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
-                    <strong className="block mb-2">This hospital is verified.</strong>
-                    <p>Verified by: {formData.verified_by || 'N/A'}</p>
-                    <p>Verified at: {formatDate(formData.verified_at as any)}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Branding</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className='w-full py-6 flex items-center justify-center flex-col border border-dashed border-gray-300 rounded-md p-4'>
-                  { (formData.logoUrl || formData.logo_url) ? (
-                    <img src={(formData.logoUrl || formData.logo_url) as string} alt="Logo" className="max-h-24" />
-                  ) : null }
-                  <input
-                    ref={logoInputRef}
-                    className="hidden"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          handleChange('logoUrl', reader.result as string);
-                          setIsDirty(true);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <Upload className="cursor-pointer" onClick={() => logoInputRef.current?.click()} />
-                    <p>Upload Logo</p>
-                </div>
-                <div>
-                  {formData.images && formData.images.length > 0 && (
-                    <>
-                    {formData.images.map((img, idx) => (
-                      <div key={idx} className="mb-2">
-                        <img src={img} alt={`Hospital Image ${idx + 1}`} className="max-w-full h-auto mb-1" />
-                        <Button variant="destructive" size="sm" onClick={() => {
-                          const newImages = (formData.images || []).filter((_, i) => i !== idx);
-                          handleChange('images' as any, newImages);
-                        }}>Remove</Button>
-                      </div>
-                    ))}
-                    </>
-                  )}
-                  <div className='w-12 h-12 flex items-center justify-center flex-col border border-dashed border-gray-300 rounded-md p-4'>
-                  { (formData.logoUrl || formData.logo_url) ? (
-                    <img src={(formData.logoUrl || formData.logo_url) as string} alt="Logo" className="max-h-12" />
-                  ) : null }
-                  <input
-                    ref={imagesInputRef}
-                    className="hidden"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          const img = reader.result as string;
-                          const newImages = [...(formData.images || []), img];
-                          handleChange('images' as any, newImages);
-                          setIsDirty(true);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <Upload className="cursor-pointer" onClick={() => imagesInputRef.current?.click()} />
-                </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <label className="flex flex-col">
-                  <span className="text-sm">Phone</span>
-                  <Input value={formData.phone || ''} onChange={(e) => handleChange('phone' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Alternative Phone</span>
-                  <Input value={formData.alternate_phone || ''} onChange={(e) => handleChange('alternate_phone' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Email</span>
-                  <Input value={formData.email || ''} onChange={(e) => handleChange('email' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Website</span>
-                  <Input value={formData.website || ''} onChange={(e) => handleChange('website' as any, e.target.value)} />
-                </label>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>SEO</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <label className="flex flex-col">
-                  <span className="text-sm">Meta Title</span>
-                  <Input value={formData.meta_title || ''} onChange={(e) => handleChange('meta_title' as any, e.target.value)} />
-                </label>
-                <label className="flex flex-col">
-                  <span className="text-sm">Meta Description</span>
-                  <Textarea value={formData.meta_description || ''} onChange={(e) => handleChange('meta_description' as any, e.target.value)} />
-                </label>
-              </CardContent>
-            </Card>
-          </div>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 }
- 
-export default AdminHospitalActionsPage;
+
+function StatCard({ label, value, icon, color }: { label: string; value: any; icon: React.ReactNode; color: 'blue' | 'green' | 'purple' | 'yellow' }) {
+    const colorStyles = {
+        blue: 'bg-blue-50 text-blue-600 border-blue-100',
+        green: 'bg-green-50 text-green-600 border-green-100',
+        purple: 'bg-purple-50 text-purple-600 border-purple-100',
+        yellow: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+    };
+
+    return (
+        <div className="group overflow-hidden rounded-2xl border bg-card p-5 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+            <div className="flex items-center justify-between mb-3">
+                <div className={`p-2 rounded-xl border ${colorStyles[color]}`}>
+                    {icon}
+                </div>
+                <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20 group-hover:bg-primary/40 transition-colors" />
+            </div>
+            <div className="space-y-0.5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary/70 transition-colors">{label}</p>
+                <p className="text-2xl font-black">{value}</p>
+            </div>
+        </div>
+    );
+}

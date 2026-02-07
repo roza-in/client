@@ -1,5 +1,3 @@
-function AdminPaymentsPage() {
-  return <div>Admin Payments Page</div>;
+export default function AdminPaymentsPage() {
+    return <div>Admin Payments</div>;
 }
-
-export default AdminPaymentsPage;

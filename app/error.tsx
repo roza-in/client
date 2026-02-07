@@ -1,52 +1,72 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
-interface ErrorProps {
-  error: Error & { digest?: string };
-  reset: () => void;
-}
+export default function Error({
+    error,
+    reset,
+}: {
+    error: Error & { digest?: string };
+    reset: () => void;
+}) {
+    const [showDetails, setShowDetails] = useState(false);
 
-export default function Error({ error, reset }: ErrorProps) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Application error:', error);
-  }, [error]);
+    useEffect(() => {
+        // Log error to monitoring service
+        console.error('Page error:', error);
+    }, [error]);
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
-          <AlertTriangle className="h-10 w-10 text-destructive" />
+    return (
+        <div className="min-h-screen flex items-center justify-center p-6">
+            <div className="text-center max-w-md">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-6">
+                    <AlertCircle className="h-8 w-8 text-destructive" />
+                </div>
+                <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
+                <p className="text-muted-foreground mb-6">
+                    We encountered an unexpected error. Please try again.
+                </p>
+
+                <div className="flex gap-3 justify-center">
+                    <button
+                        onClick={reset}
+                        className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Try Again
+                    </button>
+                    <button
+                        onClick={() => window.location.href = '/'}
+                        className="rounded-lg border px-6 py-2.5 text-sm font-medium hover:bg-muted"
+                    >
+                        Go Home
+                    </button>
+                </div>
+
+                {error.digest && (
+                    <p className="mt-6 text-xs text-muted-foreground">
+                        Error ID: {error.digest}
+                    </p>
+                )}
+
+                {process.env.NODE_ENV === 'development' && (
+                    <div className="mt-6">
+                        <button
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-sm text-muted-foreground underline"
+                        >
+                            {showDetails ? 'Hide' : 'Show'} details
+                        </button>
+                        {showDetails && (
+                            <pre className="mt-4 p-4 bg-muted rounded-lg text-left text-xs overflow-auto max-h-48">
+                                {error.message}
+                                {error.stack && `\n\n${error.stack}`}
+                            </pre>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-4">
-          Something went wrong
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          We apologize for the inconvenience. An unexpected error has occurred.
-          Please try again or contact support if the problem persists.
-        </p>
-        {error.digest && (
-          <p className="text-xs text-muted-foreground mb-4">
-            Error ID: {error.digest}
-          </p>
-        )}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button onClick={reset}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-          <Link href="/">
-            <Button variant="outline">
-              <Home className="h-4 w-4 mr-2" />
-              Go Home
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }

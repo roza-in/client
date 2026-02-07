@@ -1,135 +1,92 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import { Toaster } from "sonner";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+import { siteConfig } from '@/config/site';
 
-// Font Configuration
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
+const inter = Inter({
+    subsets: ['latin'],
+    variable: '--font-inter',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-});
-
-// Metadata Configuration
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: {
-    default: "ROZX - Digital Operating System for Indian Healthcare",
-    template: "%s | ROZX",
-  },
-  description: "ROZX is the Digital Operating System for Indian Hospitals & Clinics. Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
-  keywords: ["Healthcare", "Hospital Management", "Doctor Booking", "Patient Management", "India Healthcare", "Medical SaaS", "ROZX"],
-  authors: [
-    {
-      name: "ROZX Team",
-      url: "https://rozx.in",
+    title: {
+        default: siteConfig.name,
+        template: `%s | ${siteConfig.name}`,
     },
-  ],
-  creator: "ROZX Team",
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    url: "https://rozx.in",
-    title: "ROZX - Digital Operating System for Indian Healthcare",
-    description: "Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
-    siteName: "ROZX",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "ROZX - Healthcare Platform",
-      },
+    description: siteConfig.description,
+    keywords: [
+        'healthcare',
+        'telemedicine',
+        'doctor appointment',
+        'online consultation',
+        'video consultation',
+        'India healthcare',
+        'ROZX',
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ROZX - Digital Operating System for Indian Healthcare",
-    description: "Modern, affordable SaaS platform for patient bookings, doctor management, and hospital operations.",
-    creator: "@rozxhealth",
-    images: ["/og-image.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+    authors: [{ name: 'ROZX Healthcare' }],
+    creator: 'ROZX Healthcare',
+    metadataBase: new URL(siteConfig.url || 'https://rozx.in'),
+    openGraph: {
+        type: 'website',
+        locale: 'en_IN',
+        url: siteConfig.url,
+        title: siteConfig.name,
+        description: siteConfig.description,
+        siteName: siteConfig.name,
+        images: [
+            {
+                url: '/opengraph-image.svg',
+                width: 1200,
+                height: 630,
+                alt: siteConfig.name,
+            },
+        ],
     },
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-    ],
-    apple: [
-      { url: "/apple-icon.png" },
-    ],
-  },
-  manifest: "/manifest.json",
+    twitter: {
+        card: 'summary_large_image',
+        title: siteConfig.name,
+        description: siteConfig.description,
+        images: ['/opengraph-image.svg'],
+    },
+    icons: {
+        icon: '/icons/icon.svg',
+        shortcut: '/icons/icon.svg',
+        apple: '/icons/icon.svg',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
 };
 
-// Viewport Configuration
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ],
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+        { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+    ],
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html 
-      lang="en" 
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable}`}
-    >
-      <body className="min-h-screen bg-background text-foreground" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
-            >
-              Skip to main content
-            </a>
-            <main id="main-content" className="relative">
-              {children}
-            </main>
-          </AuthProvider>
-          <Toaster 
-            position="bottom-right"
-            toastOptions={{
-              className: 'bg-card text-card-foreground border border-border',
-            }}
-          />
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+
+import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
+import { env } from '@/config/env';
+
+export default function RootLayout({ children }: { children: React.ReactNode; }) {
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                {env.googleTagManagerId && <GoogleTagManager gtmId={env.googleTagManagerId} />}
+                <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+            </head>
+            <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+                <Providers>
+                    {children}
+                </Providers>
+                {env.googleAnalyticsId && <GoogleAnalytics gaId={env.googleAnalyticsId} />}
+            </body>
+        </html>
+    );
 }

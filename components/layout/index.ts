@@ -1,4 +1,8 @@
-export { Sidebar } from './sidebar';
-export { Header } from './header';
-export { Footer } from './footer';
-export { Header as RootHeader } from './root-header';
+/**
+ * Layout Components Index
+ */
+
+export { PublicHeader } from './header/public-header';
+export { DashboardHeader } from './header/dashboard-header';
+export { Sidebar } from './sidebar/sidebar';
+export { Footer } from './footer/footer';

@@ -2,157 +2,140 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { handleGoogleCallback } from '@/lib/api';
-import { toast } from 'sonner';
+import { useAuthStore } from '@/store/slices/auth.slice';
+import { LoadingSpinner } from '@/components/shared';
+import { getDashboardUrl, isSubdomainEnabled, type UserRole } from '@/config/subdomains';
 
+/**
+ * OAuth Callback Page
+ * Handles Supabase OAuth redirect with tokens in URL hash
+ * Sends tokens to backend to create session, then redirects to dashboard
+ */
 export default function CallbackPage() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+    const { login } = useAuthStore();
+    const [error, setError] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(true);
 
-  useEffect(() => {
-    const processCallback = async () => {
-      try {
-        const supabase = createClient();
+    useEffect(() => {
+        const processCallback = async () => {
+            try {
+                // Parse hash fragment (tokens are after #)
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
 
-        // Try to get current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                const accessToken = params.get('access_token');
+                const refreshToken = params.get('refresh_token');
+                const errorParam = params.get('error');
+                const errorDescription = params.get('error_description');
 
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw new Error(sessionError.message || 'Failed to get session');
-        }
+                // Handle OAuth errors
+                if (errorParam) {
+                    setError(errorDescription || errorParam);
+                    setIsProcessing(false);
+                    return;
+                }
 
-        // If no session returned, try to parse OAuth tokens from URL hash and set them
-        let currentSession = session;
-        if (!currentSession) {
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
+                if (!accessToken) {
+                    setError('No access token received from OAuth provider');
+                    setIsProcessing(false);
+                    return;
+                }
 
-          if (accessToken && refreshToken) {
-            const { data: { session: newSession }, error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            if (setSessionError || !newSession) {
-              throw new Error('Failed to set session from URL parameters');
+                // Decode the JWT to get user info (for userId)
+                const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+                const userId = tokenPayload.sub;
+
+                // Send tokens to our backend to create a session
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+                const response = await fetch(`${apiUrl}/auth/google/callback`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accessToken,
+                        userId,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Authentication failed');
+                }
+
+                const data = await response.json();
+
+                // Determine redirect path FIRST, before any state updates
+                const role = (data.data?.user?.role || 'patient') as UserRole;
+
+                // Check for explicit redirect in URL query
+                const searchParams = new URLSearchParams(window.location.search);
+                const redirectUrl = searchParams.get('redirect');
+
+                // Calculate final destination
+                let destination: string;
+                if (redirectUrl) {
+                    destination = redirectUrl;
+                } else if (isSubdomainEnabled()) {
+                    destination = getDashboardUrl(role);
+                } else {
+                    destination = `/${role}`;
+                }
+
+                // Store auth state (for local state sync, cookies already set by server)
+                if (data.data?.user) {
+                    login({
+                        user: data.data.user,
+                        tokens: data.data.tokens || {},
+                        isNewUser: data.data.isNewUser || false
+                    });
+                }
+
+                // CRITICAL: Redirect immediately - don't let React re-render
+                window.location.replace(destination);
+
+            } catch (err) {
+                console.error('OAuth callback error:', err);
+                setError(err instanceof Error ? err.message : 'Authentication failed');
+                setIsProcessing(false);
             }
-            currentSession = newSession;
-          } else {
-            throw new Error('No session found. Please try logging in again.');
-          }
-        }
+        };
 
-        // Exchange Supabase session for backend tokens / app session
-        const response = await handleGoogleCallback(currentSession.access_token, currentSession.user.id);
+        processCallback();
+    }, [router, login]);
 
-        // Clear pending flag (if any) and redirect
-        try {
-          sessionStorage.removeItem('auth_pending');
-        } catch (e) {
-          /* ignore */
-        }
-
-        redirectUser(response, router);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
-        console.error('OAuth callback error:', err);
-        setError(errorMessage);
-        toast.error(errorMessage);
-        setTimeout(() => router.push('/login'), 3000);
-      }
-    };
-
-    processCallback();
-  }, [router]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full mx-auto p-6">
-        <div className="text-center">
-          {!error ? (
-            <>
-              <div className="mb-4">
-                <svg
-                  className="animate-spin h-12 w-12 mx-auto text-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Completing sign in...</h2>
-              <p className="text-muted-foreground">Please wait while we log you in.</p>
-            </>
-          ) : (
-            <>
-              <div className="mb-4">
-                <svg
-                  className="h-12 w-12 mx-auto text-destructive"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold mb-2 text-destructive">Authentication Failed</h2>
-              <p className="text-muted-foreground mb-4">{error}</p>
-              <p className="text-sm text-muted-foreground">Redirecting to login...</p>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Helper function to handle user redirection
-function redirectUser(response: any, router: any) {
-  // Get redirect destination from session storage or use role-based default
-  const savedRedirect = sessionStorage.getItem('auth_redirect');
-  sessionStorage.removeItem('auth_redirect');
-
-  let redirectPath = savedRedirect;
-  if (!redirectPath) {
-    // Role-based redirect
-    switch (response?.user?.role) {
-      case 'admin':
-        redirectPath = '/admin';
-        break;
-      case 'hospital':
-        redirectPath = '/hospital';
-        break;
-      case 'doctor':
-        redirectPath = '/doctor';
-        break;
-      case 'patient':
-        redirectPath = '/patient';
-        break;
-      default:
-        redirectPath = '/';
+    if (error) {
+        return (
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg text-center">
+                    <div className="mb-4 rounded-full bg-red-100 p-3 text-red-600 mx-auto w-fit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Authentication Failed</h2>
+                    <p className="text-sm text-muted-foreground mb-6">{error}</p>
+                    <button
+                        onClick={() => router.push('/login')}
+                        className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                        Back to Login
+                    </button>
+                </div>
+            </div>
+        );
     }
-  }
 
-  toast.success('Login successful!');
-  router.push(redirectPath);
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+                <LoadingSpinner size="lg" className="mx-auto mb-4" />
+                <p className="text-sm text-muted-foreground">Redirecting...</p>
+            </div>
+        </div>
+    );
 }
