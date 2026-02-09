@@ -13,78 +13,7 @@
             "develop": true
         }
     },
-    "rewrites": [
-        {
-            "source": "/:path*",
-            "destination": "/patient/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "patient.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/doctor/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "doctor.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/hospital/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "hospital.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/reception/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "reception.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/admin/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "admin.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/consultation/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "meet.rozx.in"
-                }
-            ]
-        },
-        {
-            "source": "/:path*",
-            "destination": "/pharmacy/:path*",
-            "has": [
-                {
-                    "type": "host",
-                    "value": "pharmacy.rozx.in"
-                }
-            ]
-        }
-    ],
+    "rewrites": [],
     "headers": [
         {
             "source": "/(.*)",
