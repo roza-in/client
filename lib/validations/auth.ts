@@ -37,7 +37,7 @@ export const registerPatientSchema = z.object({
     dateOfBirth: z.string().optional(),
     gender: z.enum(['male', 'female', 'other']).optional(),
     acceptTerms: z.literal(true, {
-        errorMap: () => ({ message: 'You must accept the terms and conditions' }),
+        message: 'You must accept the terms and conditions',
     }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
