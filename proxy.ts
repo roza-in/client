@@ -198,10 +198,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.next();
 }
 
-// =============================================================================
-// Matcher Config
-// =============================================================================
-
+// Configure matcher for proxy
 export const config = {
     matcher: ['/((?!api|_next/static|_next/image|icons/icon\\.svg|manifest\\.webmanifest|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)).*)'],
 };
