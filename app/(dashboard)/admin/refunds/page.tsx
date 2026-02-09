@@ -1,3 +1,5 @@
+'use client';
+
 import { Metadata } from 'next';
 import { Pagination } from '@/components/shared';
 import { RotateCcw, CheckCircle, XCircle } from 'lucide-react';

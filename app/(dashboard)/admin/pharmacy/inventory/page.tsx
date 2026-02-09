@@ -1,3 +1,5 @@
+'use client';
+
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Search, AlertTriangle } from 'lucide-react';
