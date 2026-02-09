@@ -85,7 +85,7 @@ export async function getHospitalBySlug(slug: string): Promise<Hospital> {
  */
 export async function getHospitalDoctors(
     hospitalId: string,
-    params?: { specialization?: string; page?: number; limit?: number }
+    params?: { specialization?: string; page?: number; limit?: number;[key: string]: any }
 ): Promise<{ doctors: Doctor[]; total: number }> {
     const { data, meta } = await api.getWithMeta<Doctor[]>(endpoints.hospitals.doctors(hospitalId), { params });
     return { doctors: data, total: meta?.total || 0 };
@@ -96,7 +96,7 @@ export async function getHospitalDoctors(
  */
 export async function getHospitalAppointments(
     hospitalId: string,
-    params?: { status?: string; page?: number; limit?: number }
+    params?: { status?: string; page?: number; limit?: number;[key: string]: any }
 ): Promise<{ appointments: any[]; total: number }> {
     const { data, meta } = await api.getWithMeta<any[]>(endpoints.hospitals.appointments(hospitalId), { params });
     return { appointments: data, total: meta?.total || 0 };

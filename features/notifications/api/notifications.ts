@@ -45,6 +45,7 @@ export async function getNotifications(params?: {
     isRead?: boolean;
     page?: number;
     limit?: number;
+    [key: string]: any;
 }): Promise<{ notifications: Notification[]; total: number }> {
     const { data, meta } = await api.getWithMeta<Notification[]>(endpoints.notifications.list, {
         params,

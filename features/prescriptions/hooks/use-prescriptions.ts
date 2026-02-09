@@ -12,10 +12,12 @@ import {
     createPrescription,
     updatePrescription,
     sendPrescription,
-    type PrescriptionFilterParams,
-    type CreatePrescriptionInput,
-    type UpdatePrescriptionInput,
 } from '../api/prescriptions';
+import type {
+    PrescriptionFilters,
+    CreatePrescriptionInput,
+    UpdatePrescriptionInput
+} from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { getErrorMessage } from '@/lib/api';
 
@@ -26,7 +28,7 @@ import { getErrorMessage } from '@/lib/api';
 export const prescriptionKeys = {
     all: ['prescriptions'] as const,
     lists: () => [...prescriptionKeys.all, 'list'] as const,
-    list: (filters: PrescriptionFilterParams) => [...prescriptionKeys.lists(), filters] as const,
+    list: (filters: PrescriptionFilters) => [...prescriptionKeys.lists(), filters] as const,
     details: () => [...prescriptionKeys.all, 'detail'] as const,
     detail: (id: string) => [...prescriptionKeys.details(), id] as const,
     forAppointment: (appointmentId: string) => [...prescriptionKeys.all, 'appointment', appointmentId] as const,
@@ -39,7 +41,7 @@ export const prescriptionKeys = {
 /**
  * Hook to fetch prescriptions list
  */
-export function usePrescriptions(params?: PrescriptionFilterParams) {
+export function usePrescriptions(params?: PrescriptionFilters) {
     return useQuery({
         queryKey: prescriptionKeys.list(params || {}),
         queryFn: () => getPrescriptions(params),

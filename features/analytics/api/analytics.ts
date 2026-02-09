@@ -47,6 +47,7 @@ export interface AnalyticsParams {
     startDate?: string;
     endDate?: string;
     groupBy?: 'day' | 'week' | 'month';
+    [key: string]: string | number | boolean | string[] | null | undefined;
 }
 
 // =============================================================================

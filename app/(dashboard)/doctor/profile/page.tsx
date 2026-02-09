@@ -123,7 +123,7 @@ export default function DoctorProfilePage() {
     const name = userInfo?.name || 'Doctor';
     const email = userInfo?.email || 'Not provided';
     const phone = userInfo?.phone || 'Not provided';
-    const specialization = doctor.specialization?.name || 'General Physician';
+    const specialization = (doctor.specialization as any)?.name || doctor.specialization || 'General Physician';
     const qualifications = doctor.qualifications || [];
     const experience = doctor.experienceYears || 0;
     const registrationNumber = doctor.registrationNumber || 'Not available';
@@ -133,7 +133,7 @@ export default function DoctorProfilePage() {
     const consultationFeeInPerson = doctor.consultationFeeInPerson || 0;
     const languages = doctor.languages || ['English', 'Hindi'];
     const bio = doctor.bio || 'No bio provided.';
-    const isVerified = doctor.verificationStatus === 'verified';
+    const isVerified = doctor.verification_status === 'verified';
     const rating = doctor.rating || 0;
     const totalRatings = doctor.totalRatings || 0;
     const totalConsultations = doctor.totalConsultations || 0;
@@ -147,14 +147,14 @@ export default function DoctorProfilePage() {
             </div>
 
             {/* Profile Header Card */}
-            <div className="rounded-2xl border bg-gradient-to-r from-primary/5 to-primary/10 p-6 shadow-sm">
+            <div className="rounded-2xl border bg-linear-to-r from-primary/5 to-primary/10 p-6 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                        <div className="h-28 w-28 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-4xl font-bold text-primary shadow-lg border-4 border-white">
-                            {userInfo?.avatarUrl ? (
+                        <div className="h-28 w-28 rounded-full bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center text-4xl font-bold text-primary shadow-lg border-4 border-white">
+                            {userInfo?.profilePictureUrl ? (
                                 <img
-                                    src={userInfo.avatarUrl}
+                                    src={userInfo.profilePictureUrl}
                                     alt={name}
                                     className="h-full w-full rounded-full object-cover"
                                 />

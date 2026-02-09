@@ -13,49 +13,10 @@ import {
     type VerifyPaymentInput,
     type PaymentOrder,
 } from '../api/payments';
+import { type RazorpayOptions, type RazorpayResponse } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { getErrorMessage } from '@/lib/api';
 import { env } from '@/config/env';
-
-// =============================================================================
-// Types
-// =============================================================================
-
-export interface RazorpayOptions {
-    key: string;
-    amount: number;
-    currency: string;
-    order_id: string;
-    name: string;
-    description?: string;
-    prefill?: {
-        name?: string;
-        email?: string;
-        contact?: string;
-    };
-    handler: (response: RazorpayResponse) => void;
-    modal?: {
-        ondismiss?: () => void;
-    };
-    theme?: {
-        color?: string;
-    };
-}
-
-export interface RazorpayResponse {
-    razorpay_payment_id: string;
-    razorpay_order_id: string;
-    razorpay_signature: string;
-}
-
-declare global {
-    interface Window {
-        Razorpay: new (options: RazorpayOptions) => {
-            open: () => void;
-            close: () => void;
-        };
-    }
-}
 
 // =============================================================================
 // Hook

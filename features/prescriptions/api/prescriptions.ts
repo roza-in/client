@@ -3,42 +3,7 @@
  */
 
 import { api, endpoints } from '@/lib/api';
-import type { Prescription, PrescriptionMedication, LabTest } from '@/types';
-
-// =============================================================================
-// Types
-// =============================================================================
-
-export interface CreatePrescriptionInput {
-    appointmentId: string;
-    consultationId?: string; // Optional for backward compatibility, but required for consultation flow
-    diagnosis: string;
-    symptoms: string[];
-    medications: Omit<PrescriptionMedication, 'id' | 'prescriptionId'>[];
-    labTests?: Omit<LabTest, 'id' | 'prescriptionId' | 'status' | 'resultDate'>[];
-    advice?: string;
-    followUpDays?: number;
-    validityDays?: number;
-}
-
-export interface UpdatePrescriptionInput {
-    diagnosis?: string;
-    symptoms?: string[];
-    medications?: Omit<PrescriptionMedication, 'id' | 'prescriptionId'>[];
-    labTests?: Omit<LabTest, 'id' | 'prescriptionId' | 'status' | 'resultDate'>[];
-    advice?: string;
-    followUpDays?: number;
-}
-
-export interface PrescriptionFilterParams {
-    [key: string]: any;
-    patientId?: string;
-    doctorId?: string;
-    startDate?: string;
-    endDate?: string;
-    page?: number;
-    limit?: number;
-}
+import type { Prescription, PrescriptionMedication, LabTest, CreatePrescriptionInput, UpdatePrescriptionInput, PrescriptionFilters } from '@/types';
 
 // =============================================================================
 // API Functions
@@ -47,7 +12,7 @@ export interface PrescriptionFilterParams {
 /**
  * Get prescriptions list for current user (patient or doctor)
  */
-export async function getPrescriptions(params?: PrescriptionFilterParams): Promise<{
+export async function getPrescriptions(params?: PrescriptionFilters): Promise<{
     prescriptions: Prescription[];
     total: number;
     page: number;

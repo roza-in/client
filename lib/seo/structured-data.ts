@@ -96,7 +96,7 @@ export function generateOrganizationSchema(): Organization {
         name: siteConfig.name,
         url: siteConfig.url,
         logo: `${siteConfig.url}${siteConfig.logo}`,
-        sameAs: Object.values(siteConfig.socialLinks || {}),
+        sameAs: Object.values(siteConfig.social || {}),
         contactPoint: siteConfig.contact ? {
             '@type': 'ContactPoint',
             telephone: siteConfig.contact.phone,

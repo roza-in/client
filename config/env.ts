@@ -13,7 +13,7 @@ const parseNumber = (value?: string, fallback = 0): number => {
 };
 
 // Validation
-function validateEnv() {
+export function validateEnv() {
   const required: Record<string, string | undefined> = {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -67,5 +67,15 @@ export const env = {
   debug: parseBoolean(process.env.NEXT_PUBLIC_DEBUG),
   logLevel: (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) ?? 'info',
 } as const;
+
+export const isDevelopment = env.appEnv === 'local' || env.appEnv === 'development';
+export const isProduction = env.appEnv === 'production';
+export const isStaging = false; // Default to false if not explicitly defined
+export const isTest = process.env.NODE_ENV === 'test';
+export const isServer = typeof window === 'undefined';
+export const isClient = typeof window !== 'undefined';
+
+export type Env = typeof env;
+export type EnvKey = keyof Env;
 
 export default env;

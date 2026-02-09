@@ -20,6 +20,18 @@ export interface RegisterPatientInput {
     dateOfBirth?: string;
 }
 
+export interface RegisterDoctorInput {
+    phone: string;
+    otp: string;
+    name: string;
+    email: string;
+    password?: string;
+    registrationNumber: string;
+    specialization: string;
+    qualification: string;
+    experience?: number;
+}
+
 export interface RegisterHospitalInput {
     phone: string;
     otp: string;

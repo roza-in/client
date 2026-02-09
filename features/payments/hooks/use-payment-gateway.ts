@@ -16,27 +16,13 @@ import {
     type PaymentConfig,
     type VerifyPaymentInput,
 } from '../api/payments';
+import { type RazorpayResponse } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { getErrorMessage } from '@/lib/api';
 
 // =============================================================================
 // Types
 // =============================================================================
-
-export interface RazorpayResponse {
-    razorpay_payment_id: string;
-    razorpay_order_id: string;
-    razorpay_signature: string;
-}
-
-declare global {
-    interface Window {
-        Razorpay: new (options: any) => {
-            open: () => void;
-            close: () => void;
-        };
-    }
-}
 
 export interface PaymentGatewayOptions {
     appointmentId: string;

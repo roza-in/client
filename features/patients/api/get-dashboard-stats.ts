@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from '@/lib/api/client';
-import type { AppointmentListItem, Prescription } from '@/lib/types';
+import type { AppointmentListItem, Prescription } from '@/types';
 
 // =============================================================================
 // Types

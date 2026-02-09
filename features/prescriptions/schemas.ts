@@ -11,9 +11,9 @@ export {
 } from '@/lib/validations';
 
 export type {
-    MedicationInput,
-    LabTestInput,
-    CreatePrescriptionInput,
-    UpdatePrescriptionInput,
-    PrescriptionFilterInput,
+    MedicationData as MedicationValidation,
+    LabTestData as LabTestValidation,
+    CreatePrescriptionData as CreatePrescriptionValidation,
+    UpdatePrescriptionData as UpdatePrescriptionValidation,
+    PrescriptionFilterData as PrescriptionFilterValidation,
 } from '@/lib/validations';

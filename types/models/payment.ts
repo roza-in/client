@@ -112,6 +112,46 @@ export interface PaymentWithDetails extends Payment {
 }
 
 // =============================================================================
+// Razorpay Types
+// =============================================================================
+
+export interface RazorpayOptions {
+    key: string | undefined;
+    amount: number | undefined;
+    currency: string | undefined;
+    order_id: string | undefined;
+    name: string | undefined;
+    description?: string;
+    prefill?: {
+        name?: string;
+        email?: string;
+        contact?: string;
+    };
+    handler?: (response: RazorpayResponse) => void | Promise<void>;
+    modal?: {
+        ondismiss?: () => void;
+    };
+    theme?: {
+        color?: string;
+    };
+}
+
+export interface RazorpayResponse {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+}
+
+declare global {
+    interface Window {
+        Razorpay: new (options: RazorpayOptions) => {
+            open: () => void;
+            close: () => void;
+        };
+    }
+}
+
+// =============================================================================
 // Refund
 // =============================================================================
 

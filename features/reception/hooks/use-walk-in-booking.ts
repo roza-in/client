@@ -12,7 +12,7 @@ export function useWalkInBooking() {
     return useMutation({
         mutationFn: (data: WalkInBookingInput) => createWalkInBooking(data),
         onSuccess: (data) => {
-            toast.success(`Walk-in booked successfully. Token: ${data.token}`);
+            toast.success(`Walk-in booked successfully. Token: ${data.appointment.appointmentNumber}`);
             // Invalidate queue to refresh data
             queryClient.invalidateQueries({ queryKey: ['reception-queue'] });
         },

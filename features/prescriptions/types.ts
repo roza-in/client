@@ -1,5 +1,6 @@
 /**
  * Prescriptions Feature - Types
+ * Redundant file - using central types from @/types
  */
 
 export type {
@@ -7,10 +8,7 @@ export type {
     PrescriptionMedication,
     LabTest,
     MedicationReminder,
-} from '@/types';
-
-export type {
     CreatePrescriptionInput,
     UpdatePrescriptionInput,
-    PrescriptionFilterParams,
-} from './api/prescriptions';
+    PrescriptionFilters as PrescriptionFilterParams,
+} from '@/types';

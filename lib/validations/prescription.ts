@@ -80,8 +80,8 @@ export const prescriptionFilterSchema = z.object({
 // Type Exports
 // =============================================================================
 
-export type MedicationInput = z.infer<typeof medicationSchema>;
-export type LabTestInput = z.infer<typeof labTestSchema>;
-export type CreatePrescriptionInput = z.infer<typeof createPrescriptionSchema>;
-export type UpdatePrescriptionInput = z.infer<typeof updatePrescriptionSchema>;
-export type PrescriptionFilterInput = z.infer<typeof prescriptionFilterSchema>;
+export type MedicationData = z.infer<typeof medicationSchema>;
+export type LabTestData = z.infer<typeof labTestSchema>;
+export type CreatePrescriptionData = z.infer<typeof createPrescriptionSchema>;
+export type UpdatePrescriptionData = z.infer<typeof updatePrescriptionSchema>;
+export type PrescriptionFilterData = z.infer<typeof prescriptionFilterSchema>;

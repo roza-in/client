@@ -61,7 +61,7 @@ export default async function PrescriptionDetailPage({ params }: PageProps) {
         followUpDays: 7,
         createdAt: '2026-01-15T10:00:00',
         validUntil: '2026-02-15T10:00:00',
-    };
+    } as any;
 
     return (
         <div className="p-6 max-w-4xl">

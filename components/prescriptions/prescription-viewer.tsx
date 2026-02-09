@@ -19,10 +19,9 @@ import {
 import { format, parseISO } from 'date-fns';
 import { downloadPrescriptionPdf, sendPrescription } from '@/features/prescriptions';
 import { toast } from '@/hooks/use-toast';
-import type { Prescription } from '@/types';
 
 interface PrescriptionViewerProps {
-    prescription: Prescription;
+    prescription: any;
     className?: string;
 }
 
@@ -115,7 +114,7 @@ export function PrescriptionViewer({ prescription, className }: PrescriptionView
                 <p className="text-muted-foreground">{prescription.diagnosis}</p>
                 {prescription.symptoms && prescription.symptoms.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
-                        {prescription.symptoms.map((symptom, i) => (
+                        {prescription.symptoms.map((symptom: any, i: number) => (
                             <span key={i} className="rounded-full bg-muted px-2 py-0.5 text-xs">
                                 {symptom}
                             </span>
@@ -132,7 +131,7 @@ export function PrescriptionViewer({ prescription, className }: PrescriptionView
                         Medications ({prescription.medications.length})
                     </h3>
                     <div className="space-y-4">
-                        {prescription.medications.map((med, index) => (
+                        {prescription.medications.map((med: any, index: number) => (
                             <div key={index} className="rounded-lg border p-4">
                                 <div className="flex justify-between">
                                     <div>
@@ -178,7 +177,7 @@ export function PrescriptionViewer({ prescription, className }: PrescriptionView
                         Lab Tests ({prescription.labTests.length})
                     </h3>
                     <div className="space-y-2">
-                        {prescription.labTests.map((test, index) => (
+                        {prescription.labTests.map((test: any, index: number) => (
                             <div key={index} className="flex items-center justify-between rounded-lg border p-3">
                                 <div>
                                     <p className="font-medium">{test.name}</p>

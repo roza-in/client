@@ -83,9 +83,9 @@ export {
     prescriptionFilterSchema,
 } from './prescription';
 export type {
-    MedicationInput,
-    LabTestInput,
-    CreatePrescriptionInput,
-    UpdatePrescriptionInput,
-    PrescriptionFilterInput,
+    MedicationData,
+    LabTestData,
+    CreatePrescriptionData,
+    UpdatePrescriptionData,
+    PrescriptionFilterData,
 } from './prescription';

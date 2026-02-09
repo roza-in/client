@@ -15,6 +15,7 @@ export interface HealthRecordFilters {
     endDate?: string;
     page?: number;
     limit?: number;
+    [key: string]: string | number | boolean | string[] | null | undefined;
 }
 
 export interface UploadHealthRecordInput {

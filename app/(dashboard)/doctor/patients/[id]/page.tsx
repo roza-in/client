@@ -210,7 +210,7 @@ export default function PatientHistoryPage({ params }: PageProps) {
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-start gap-6">
                     {/* Avatar */}
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-2xl font-bold text-primary shrink-0">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/5 text-2xl font-bold text-primary shrink-0">
                         {(patient.patientName || 'P').charAt(0).toUpperCase()}
                     </div>
 

@@ -124,6 +124,16 @@ export interface DoctorProfile {
     verification_status?: string;
     is_active?: boolean;
     isActive?: boolean; // Frontend normalized property
+    qualifications?: string[];
+    registrationNumber?: string;
+    hospital?: { name: string; city?: string; };
+    consultationFeeOnline?: number;
+    consultationFeeInPerson?: number;
+    languages?: string[];
+    bio?: string;
+    rating?: number;
+    totalRatings?: number;
+    totalConsultations?: number;
 }
 
 export interface HospitalProfile {

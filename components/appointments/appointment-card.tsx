@@ -150,7 +150,7 @@ export function AppointmentCard({
                         >
                             View Details
                         </Link>
-                        {appointment.status === 'confirmed' || appointment.status === 'pending' ? (
+                        {appointment.status === 'confirmed' || appointment.status === 'pending_payment' ? (
                             <>
                                 {appointment.consultationType === 'online' && (
                                     <Link

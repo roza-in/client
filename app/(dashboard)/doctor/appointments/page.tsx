@@ -97,7 +97,7 @@ function AppointmentCard({ appointment }: { appointment: AppointmentListItem }) 
             <div className="flex items-start justify-between gap-4">
                 <div className="flex gap-4 flex-1 min-w-0">
                     {/* Patient Avatar */}
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-bold text-lg shrink-0">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-liner-to-br from-primary/20 to-primary/5 text-primary font-bold text-lg shrink-0">
                         {appointment.patientAvatar ? (
                             <img
                                 src={appointment.patientAvatar}

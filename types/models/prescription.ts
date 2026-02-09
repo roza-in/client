@@ -229,25 +229,33 @@ export interface MedicationLog {
 
 export interface CreatePrescriptionInput {
     appointmentId: string;
+    consultationId?: string;
     diagnosis: string;
+    symptoms?: string[];
+    medications: (Omit<PrescriptionMedication, 'id' | 'prescriptionId'> | PrescriptionMedication)[];
+    labTests?: (Omit<LabTest, 'id' | 'prescriptionId' | 'status' | 'resultDate'> | LabTest)[];
     icdCodes?: string[];
-    medications: PrescriptionMedication[];
-    labTests?: LabTest[];
+    advice?: string;
     lifestyleAdvice?: string;
     dietaryAdvice?: string;
     followUpInstructions?: string;
+    followUpDays?: number;
     followUpAfterDays?: number;
+    validityDays?: number;
     additionalNotes?: string;
 }
 
 export interface UpdatePrescriptionInput {
     diagnosis?: string;
+    symptoms?: string[];
+    medications?: (Omit<PrescriptionMedication, 'id' | 'prescriptionId'> | PrescriptionMedication)[];
+    labTests?: (Omit<LabTest, 'id' | 'prescriptionId' | 'status' | 'resultDate'> | LabTest)[];
     icdCodes?: string[];
-    medications?: PrescriptionMedication[];
-    labTests?: LabTest[];
+    advice?: string;
     lifestyleAdvice?: string;
     dietaryAdvice?: string;
     followUpInstructions?: string;
+    followUpDays?: number;
     followUpAfterDays?: number;
     additionalNotes?: string;
 }
@@ -281,6 +289,7 @@ export interface CreateMedicationReminderInput {
 // =============================================================================
 
 export interface PrescriptionFilters {
+    [key: string]: any;
     patientId?: string;
     doctorId?: string;
     hospitalId?: string;

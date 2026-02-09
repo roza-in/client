@@ -21,6 +21,7 @@ export interface QueueAppointment {
     status: string;
     consultationType: string;
     checkedInAt: string | null;
+    walkInToken?: string | null;
     consultationFee?: number;
     paymentCollectedAt?: string | null;
 }

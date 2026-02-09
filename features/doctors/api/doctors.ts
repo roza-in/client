@@ -22,6 +22,7 @@ export interface DoctorSearchParams {
     sortBy?: 'rating' | 'experience' | 'fee_low' | 'fee_high';
     page?: number;
     limit?: number;
+    [key: string]: string | number | boolean | string[] | null | undefined;
 }
 
 export interface DoctorListResponse {
