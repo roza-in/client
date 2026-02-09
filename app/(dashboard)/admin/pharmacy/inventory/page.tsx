@@ -1,14 +1,8 @@
 'use client';
 
-import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Search, AlertTriangle } from 'lucide-react';
 import { SearchInput, Pagination } from '@/components/shared';
-
-export const metadata: Metadata = {
-    title: 'Pharmacy Inventory',
-    description: 'Manage pharmacy inventory.',
-};
 
 export default function AdminPharmacyInventoryPage() {
     const products = [

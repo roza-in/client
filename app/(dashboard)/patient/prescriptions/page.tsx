@@ -1,17 +1,10 @@
 'use client';
 
-import { Metadata } from 'next';
 import Link from 'next/link';
-import { PrescriptionViewer } from '@/components/prescriptions';
 import { EmptyState, Pagination } from '@/components/shared';
 import { ClipboardList, Download, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { routes } from '@/config';
-
-export const metadata: Metadata = {
-    title: 'My Prescriptions',
-    description: 'View your medical prescriptions.',
-};
 
 export default function PrescriptionsPage() {
     // Mock prescriptions - in real implementation, fetch from API
