@@ -87,7 +87,7 @@ function StatusBadge({ status }: { status: string }) {
 // =============================================================================
 
 function AppointmentCard({ appointment }: { appointment: AppointmentListItem }) {
-    const isVideo = appointment.consultationType === 'online' || appointment.consultationType === 'video';
+    const isVideo = appointment.consultationType === 'online';
     const canStart = isVideo && (appointment.status === 'confirmed' || appointment.status === 'checked_in');
     const appointmentDate = new Date(appointment.appointmentDate);
     const isToday = format(appointmentDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
