@@ -8,8 +8,6 @@ import {
     getRoleForPath,
     buildSubdomainUrl,
     isSubdomainEnabled,
-    getPathPrefix,
-    type SubdomainKey,
     type UserRole,
 } from './config/subdomains';
 import { env } from './config';
