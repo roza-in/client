@@ -1,110 +1,146 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/slices/auth.slice';
 import { LoadingSpinner } from '@/components/shared';
 import { getDashboardUrl, isSubdomainEnabled, type UserRole } from '@/config/subdomains';
 
 /**
- * OAuth Callback Page
- * Handles Supabase OAuth redirect with tokens in URL hash
- * Sends tokens to backend to create session, then redirects to dashboard
+ * OAuth Callback Page Content
+ * Handles Supabase OAuth redirect with tokens in URL hash or code in query params
  */
-export default function CallbackPage() {
+function CallbackContent() {
     const router = useRouter();
     const { login } = useAuthStore();
     const [error, setError] = useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = useState(true);
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const processCallback = async () => {
             try {
-                // Parse hash fragment (tokens are after #)
-                const hash = window.location.hash.substring(1);
-                const params = new URLSearchParams(hash);
+                // 1. Handle PKCE Flow (code in query params) - Standard & Secure
+                const code = searchParams.get('code');
+                const errorParam = searchParams.get('error');
+                const errorDescription = searchParams.get('error_description');
 
-                const accessToken = params.get('access_token');
-                const refreshToken = params.get('refresh_token');
-                const errorParam = params.get('error');
-                const errorDescription = params.get('error_description');
-
-                // Handle OAuth errors
                 if (errorParam) {
-                    setError(errorDescription || errorParam);
-                    setIsProcessing(false);
-                    return;
+                    throw new Error(errorDescription || errorParam);
                 }
 
-                if (!accessToken) {
-                    setError('No access token received from OAuth provider');
-                    setIsProcessing(false);
-                    return;
-                }
+                if (code) {
+                    // Exchange code for session via backend
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-                // Decode the JWT to get user info (for userId)
-                const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-                const userId = tokenPayload.sub;
-
-                // Send tokens to our backend to create a session
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-                const response = await fetch(`${apiUrl}/auth/google/callback`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        accessToken,
-                        userId,
-                    }),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || 'Authentication failed');
-                }
-
-                const data = await response.json();
-
-                // Determine redirect path FIRST, before any state updates
-                const role = (data.data?.user?.role || 'patient') as UserRole;
-
-                // Check for explicit redirect in URL query
-                const searchParams = new URLSearchParams(window.location.search);
-                const redirectUrl = searchParams.get('redirect');
-
-                // Calculate final destination
-                let destination: string;
-                if (redirectUrl) {
-                    destination = redirectUrl;
-                } else if (isSubdomainEnabled()) {
-                    destination = getDashboardUrl(role);
-                } else {
-                    destination = `/${role}`;
-                }
-
-                // Store auth state (for local state sync, cookies already set by server)
-                if (data.data?.user) {
-                    login({
-                        user: data.data.user,
-                        tokens: data.data.tokens || {},
-                        isNewUser: data.data.isNewUser || false
+                    // Call GET /auth/google/callback?code=...
+                    // Note: backend handles the exchange and sets HttpOnly cookies
+                    const response = await fetch(`${apiUrl}/auth/google/callback?code=${code}`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || 'Authentication failed');
+                    }
+
+                    const data = await response.json();
+
+                    if (data.data?.user) {
+                        login({
+                            user: data.data.user,
+                            tokens: data.data.tokens || {},
+                            isNewUser: data.data.isNewUser || false
+                        });
+
+                        // Handle Redirect
+                        handleRedirect(data.data.user);
+                        return;
+                    }
                 }
 
-                // CRITICAL: Redirect immediately - don't let React re-render
-                window.location.replace(destination);
+                // 2. Handle Implicit Flow (tokens in hash) - Legacy/Fallback
+                // Only run on client-side
+                if (typeof window !== 'undefined') {
+                    const hash = window.location.hash.substring(1);
+                    if (hash) {
+                        const params = new URLSearchParams(hash);
+                        const accessToken = params.get('access_token');
+                        const errorHash = params.get('error');
+                        const errorDescHash = params.get('error_description');
+
+                        if (errorHash) {
+                            throw new Error(errorDescHash || errorHash);
+                        }
+
+                        if (accessToken) {
+                            // Decode the JWT to get user info (for userId)
+                            const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+                            const userId = tokenPayload.sub;
+
+                            // Send tokens to our backend to create a session
+                            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+                            const response = await fetch(`${apiUrl}/auth/google/callback`, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    accessToken,
+                                    userId,
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}));
+                                throw new Error(errorData.message || 'Authentication failed');
+                            }
+
+                            const data = await response.json();
+
+                            if (data.data?.user) {
+                                login({
+                                    user: data.data.user,
+                                    tokens: data.data.tokens || {},
+                                    isNewUser: data.data.isNewUser || false
+                                });
+                                // Handle Redirect
+                                handleRedirect(data.data.user);
+                                return;
+                            }
+                        }
+                    }
+                }
 
             } catch (err) {
                 console.error('OAuth callback error:', err);
                 setError(err instanceof Error ? err.message : 'Authentication failed');
-                setIsProcessing(false);
             }
         };
 
+        const handleRedirect = (user: any) => {
+            const role = (user.role || 'patient') as UserRole;
+            const explicitRedirect = searchParams.get('redirect');
+
+            let destination: string;
+            if (explicitRedirect) {
+                destination = explicitRedirect;
+            } else if (isSubdomainEnabled()) {
+                destination = getDashboardUrl(role);
+            } else {
+                destination = `/${role}`;
+            }
+
+            // CRITICAL: Redirect immediately
+            window.location.replace(destination);
+        };
+
         processCallback();
-    }, [router, login]);
+    }, [router, login, searchParams]);
 
     if (error) {
         return (
@@ -134,8 +170,20 @@ export default function CallbackPage() {
         <div className="flex min-h-screen items-center justify-center">
             <div className="text-center">
                 <LoadingSpinner size="lg" className="mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground">Redirecting...</p>
+                <p className="text-sm text-muted-foreground">Completing secure login...</p>
             </div>
         </div>
+    );
+}
+
+export default function CallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        }>
+            <CallbackContent />
+        </Suspense>
     );
 }
