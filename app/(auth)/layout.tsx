@@ -69,8 +69,19 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="flex w-full flex-col lg:w-2/5">
                 {/* Mobile Header (Only visible on mobile) */}
                 <div className="flex items-center justify-between border-b p-6 lg:hidden">
-                    <Image src='/logo/rozx-light-logo.svg' alt="Logo" width={100} height={100} className="w-auto h-auto" />
-                    <Link href="/" className="text-sm font-medium text-primary">Home</Link>
+                    <Link href="/">
+                        <Image
+                            src='/logo/rozx-light-logo.svg'
+                            alt="Rozx Logo"
+                            width={150}
+                            height={150}
+                            className="h-15 -my-8 w-auto object-contain"
+                            priority
+                        />
+                    </Link>
+                    <Link href="/" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                        Home
+                    </Link>
                 </div>
 
                 {/* Content Area */}
