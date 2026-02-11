@@ -23,7 +23,7 @@ export function Logo({ variant = 'default', className, width, height }: LogoProp
         <div className={cn("relative flex items-center justify-center", className)}>
             <Image
                 src={lightLogo}
-                alt="Rozx Logo"
+                alt="ROZX Logo"
                 width={w}
                 height={h}
                 className="dark:hidden h-full w-auto object-contain"
@@ -31,7 +31,7 @@ export function Logo({ variant = 'default', className, width, height }: LogoProp
             />
             <Image
                 src={darkLogo}
-                alt="Rozx Logo"
+                alt="ROZX Logo"
                 width={w}
                 height={h}
                 className="hidden dark:block h-full w-auto object-contain"

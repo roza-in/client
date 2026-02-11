@@ -148,7 +148,7 @@ export default function PrivacyPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-foreground">Mailing Address</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">ROZX Healthcare, New Delhi, India</p>
+                                        <p className="text-sm text-muted-foreground mt-1">ROZX Healthcare, Ambedkar Nagar, Uttar Pradesh 224155, India</p>
                                     </div>
                                 </div>
                             </div>
