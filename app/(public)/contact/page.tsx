@@ -146,7 +146,7 @@ export default function ContactPage() {
                                     <div>
                                         <p className="font-semibold">Location</p>
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            New Delhi, India
+                                            Ambedkar Nagar, Uttar Pradesh 224155, India
                                         </p>
                                     </div>
                                 </div>
