@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Toast Provider
+ * Rozx Healthcare Platform - Toast Provider
  * 
  * Provides toast notification functionality using Sonner.
  */

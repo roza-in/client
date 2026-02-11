@@ -8,8 +8,8 @@ import {
 import { fetchSpecializations } from '@/lib/api/public';
 
 export const metadata: Metadata = {
-    title: 'Medical Specialties | ROZX Healthcare',
-    description: 'Explore all medical specialties and find the right doctor for your healthcare needs on ROZX Healthcare.',
+    title: 'Medical Specialties | Rozx Healthcare',
+    description: 'Explore all medical specialties and find the right doctor for your healthcare needs on Rozx Healthcare.',
 };
 
 // Fallback icons mapping based on slug

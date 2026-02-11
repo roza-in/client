@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Appointment Validation Schemas
+ * Rozx Healthcare Platform - Appointment Validation Schemas
  */
 
 import { z } from 'zod';

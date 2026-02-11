@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - SEO Module Index
+ * Rozx Healthcare Platform - SEO Module Index
  */
 
 export {

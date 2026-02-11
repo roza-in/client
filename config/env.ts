@@ -1,4 +1,4 @@
-// ROZX Healthcare Platform - Environment Configuration
+// Rozx Healthcare Platform - Environment Configuration
 
 type Environment = 'local' | 'development' | 'production';
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';

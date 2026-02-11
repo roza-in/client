@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - General Formatters
+ * Rozx Healthcare Platform - General Formatters
  * 
  * Common formatting utilities.
  */

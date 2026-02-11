@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Site Metadata
+ * Rozx Healthcare Platform - Site Metadata
  * 
  * Centralized site configuration for SEO, branding, and metadata.
  */
@@ -12,7 +12,7 @@ import env from "./env";
 
 export const siteConfig = {
     // Basic Info
-    name: 'ROZX Healthcare',
+    name: 'Rozx Healthcare',
     shortName: 'ROZX',
     tagline: 'Healthcare Made Simple',
     description: 'Book doctor appointments online. Connect with verified doctors, hospitals, and healthcare providers. Video consultations, prescriptions, and health records - all in one place.',
@@ -62,8 +62,8 @@ export const siteConfig = {
 // =============================================================================
 
 export const seoConfig = {
-    titleTemplate: '%s | ROZX Healthcare',
-    defaultTitle: 'ROZX Healthcare - Book Doctor Appointments Online',
+    titleTemplate: '%s | Rozx Healthcare',
+    defaultTitle: 'Rozx Healthcare - Book Doctor Appointments Online',
     keywords: [
         'Healthcare',
         'Doctor Appointment',
@@ -77,13 +77,13 @@ export const seoConfig = {
     openGraph: {
         type: 'website',
         locale: 'en_IN',
-        siteName: 'ROZX Healthcare',
+        siteName: 'Rozx Healthcare',
         images: [
             {
                 url: '/images/og-image.png',
                 width: 1200,
                 height: 630,
-                alt: 'ROZX Healthcare',
+                alt: 'Rozx Healthcare',
             },
         ],
     },

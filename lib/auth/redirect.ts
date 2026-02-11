@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Auth Redirect Utilities
+ * Rozx Healthcare Platform - Auth Redirect Utilities
  * 
  * Redirect logic for authentication flows.
  */

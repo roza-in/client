@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Appointment Status Constants
+ * Rozx Healthcare Platform - Appointment Status Constants
  */
 
 // =============================================================================

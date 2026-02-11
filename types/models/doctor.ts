@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Doctor Model Types
+ * Rozx Healthcare Platform - Doctor Model Types
  */
 
 import type {

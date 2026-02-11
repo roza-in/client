@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Config Constants
+ * Rozx Healthcare Platform - Config Constants
  * 
  * Application configuration constants.
  */
@@ -8,7 +8,7 @@
 // App Info
 // =============================================================================
 
-export const APP_NAME = 'ROZX Healthcare';
+export const APP_NAME = 'Rozx Healthcare';
 export const APP_SHORT_NAME = 'ROZX';
 export const APP_DESCRIPTION = 'Book appointments with trusted doctors and hospitals across India';
 export const APP_VERSION = '1.0.0';

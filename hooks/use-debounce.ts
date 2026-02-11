@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Debounce Hook
+ * Rozx Healthcare Platform - Debounce Hook
  * 
  * Debounce values and callbacks for performance optimization.
  */

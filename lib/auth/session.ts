@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Session Management
+ * Rozx Healthcare Platform - Session Management
  * 
  * Client-side session utilities.
  */

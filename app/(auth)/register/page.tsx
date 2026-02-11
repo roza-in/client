@@ -4,8 +4,8 @@ import { RegisterForm } from '@/components/auth';
 import { LoadingSpinner } from '@/components/shared';
 
 export const metadata: Metadata = {
-    title: 'Create Account | ROZX Healthcare',
-    description: 'Register for ROZX Healthcare - India\'s future of healthcare',
+    title: 'Create Account | Rozx Healthcare',
+    description: 'Register for Rozx Healthcare - India\'s future of healthcare',
 };
 
 export default function RegisterPage() {

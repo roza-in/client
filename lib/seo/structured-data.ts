@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Structured Data (JSON-LD)
+ * Rozx Healthcare Platform - Structured Data (JSON-LD)
  * 
  * Schema.org structured data for SEO.
  */

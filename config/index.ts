@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Config Index
+ * Rozx Healthcare Platform - Config Index
  * Centralized exports for all configuration
  */
 

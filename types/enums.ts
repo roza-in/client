@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Global Enums
+ * Rozx Healthcare Platform - Global Enums
  * All enum types used across the application
  * Based on server database schema
  */

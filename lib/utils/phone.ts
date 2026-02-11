@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Phone Number Utilities
+ * Rozx Healthcare Platform - Phone Number Utilities
  * 
  * Indian phone number validation and formatting.
  */

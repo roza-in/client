@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Pagination Hook
+ * Rozx Healthcare Platform - Pagination Hook
  * 
  * Pagination state management for lists and tables.
  */

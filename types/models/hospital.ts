@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Hospital Model Types
+ * Rozx Healthcare Platform - Hospital Model Types
  */
 
 import type {

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Endpoints
+ * Rozx Healthcare Platform - API Endpoints
  */
 
 // =============================================================================

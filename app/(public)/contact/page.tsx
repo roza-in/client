@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle, Linkedin, Twitter, Instagram, Github, HelpCircle, Building2, Stethoscope, User, ChevronDown } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Contact Us | ROZX Healthcare',
-    description: 'Get in touch with ROZX Healthcare. We are here to help patients, doctors, and hospitals with any questions or support needs.',
+    title: 'Contact Us | Rozx Healthcare',
+    description: 'Get in touch with Rozx Healthcare. We are here to help patients, doctors, and hospitals with any questions or support needs.',
     openGraph: {
-        title: 'Contact ROZX Healthcare',
+        title: 'Contact Rozx Healthcare',
         description: 'Reach out for support, partnerships, or general inquiries',
         type: 'website',
     },
@@ -90,7 +90,7 @@ export default function ContactPage() {
                     <div className="max-w-2xl mx-auto text-center">
                         <h1 className="text-4xl font-bold tracking-tight">Get in Touch</h1>
                         <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-                            Have questions or need support?<br /> We're here to help you with anything related to ROZX Healthcare.
+                            Have questions or need support?<br /> We're here to help you with anything related to Rozx Healthcare.
                         </p>
                     </div>
                 </div>

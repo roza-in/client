@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Filter Hook
+ * Rozx Healthcare Platform - Filter Hook
  * 
  * Filter state management for lists and tables with URL sync.
  */

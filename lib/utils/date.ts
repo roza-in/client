@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Date Utilities
+ * Rozx Healthcare Platform - Date Utilities
  * 
  * Date formatting and manipulation helpers using date-fns.
  */

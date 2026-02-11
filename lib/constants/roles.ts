@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Role Constants
+ * Rozx Healthcare Platform - Role Constants
  * 
  * User role definitions and utilities.
  */

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Tailwind Merge Utility
+ * Rozx Healthcare Platform - Tailwind Merge Utility
  * 
  * Combines class names with Tailwind CSS conflict resolution.
  */

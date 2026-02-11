@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Common Validation Schemas
+ * Rozx Healthcare Platform - Common Validation Schemas
  * 
  * Shared Zod validation schemas.
  */

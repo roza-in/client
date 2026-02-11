@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Validations Module Index
+ * Rozx Healthcare Platform - Validations Module Index
  */
 
 // Common schemas

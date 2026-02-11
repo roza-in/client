@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Prescription Validation Schemas
+ * Rozx Healthcare Platform - Prescription Validation Schemas
  */
 
 import { z } from 'zod';

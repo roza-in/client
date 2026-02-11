@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'ROZX Healthcare',
+        name: 'Rozx Healthcare',
         short_name: 'ROZX',
         description: 'India\'s trusted healthcare platform for doctor consultations',
         start_url: '/',

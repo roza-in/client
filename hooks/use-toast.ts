@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Toast Hook
+ * Rozx Healthcare Platform - Toast Hook
  * 
  * Wrapper around Sonner for toast notifications with preset styles.
  */

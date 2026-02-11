@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { Scale, ChevronRight, AlertTriangle, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Terms of Service | ROZX Healthcare',
-    description: 'Read our Terms of Service to understand the rules and regulations for using the ROZX Healthcare platform.',
+    title: 'Terms of Service | Rozx Healthcare',
+    description: 'Read our Terms of Service to understand the rules and regulations for using the Rozx Healthcare platform.',
 };
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
                             Terms of Service
                         </h1>
                         <p className="text-lg text-muted-foreground leading-relaxed">
-                            Please read these terms carefully before using our services. They govern your relationship with ROZX Healthcare.
+                            Please read these terms carefully before using our services. They govern your relationship with Rozx Healthcare.
                         </p>
                         <div className="mt-6 text-sm font-medium text-muted-foreground">
                             Last updated: February 2, 2026
@@ -62,15 +62,15 @@ export default function TermsPage() {
                                 </div>
                                 <div className="text-sm leading-relaxed">
                                     <strong className="font-bold text-base block mb-1">Medical Disclaimer</strong>
-                                    ROZX Healthcare connects patients with healthcare providers but does not provide medical advice, diagnosis, or treatment directly.
+                                    Rozx Healthcare connects patients with healthcare providers but does not provide medical advice, diagnosis, or treatment directly.
                                     The content on this platform is for informational purposes only. In case of a medical emergency, please contact your local emergency services immediately.
                                 </div>
                             </div>
 
                             <h2 id="section-1">1. Agreement to Terms</h2>
                             <p>
-                                These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you") and ROZX Healthcare ("we," "us," or "our"),
-                                concerning your access to and use of the ROZX Healthcare website and application.
+                                These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you") and Rozx Healthcare ("we," "us," or "our"),
+                                concerning your access to and use of the Rozx Healthcare website and application.
                             </p>
 
                             <h2 id="section-2">2. Intellectual Property Rights</h2>

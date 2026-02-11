@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Payment Model Types
+ * Rozx Healthcare Platform - Payment Model Types
  */
 
 import type {

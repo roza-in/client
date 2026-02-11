@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Token Utilities
+ * Rozx Healthcare Platform - Token Utilities
  * 
  * JWT token handling utilities (tokens are in httpOnly cookies, not directly accessible).
  */

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Module Index
+ * Rozx Healthcare Platform - API Module Index
  */
 
 export { api, onUnauthorized } from './client';

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Query Provider
+ * Rozx Healthcare Platform - Query Provider
  * 
  * React Query (TanStack Query) configuration for data fetching.
  */

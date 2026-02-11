@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Auth Validation Schemas
+ * Rozx Healthcare Platform - Auth Validation Schemas
  */
 
 import { z } from 'zod';

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Types
+ * Rozx Healthcare Platform - API Types
  * API response and request types
  */
 

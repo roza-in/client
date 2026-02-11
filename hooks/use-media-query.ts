@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Media Query Hook
+ * Rozx Healthcare Platform - Media Query Hook
  * 
  * Responsive design utilities using CSS media queries.
  */

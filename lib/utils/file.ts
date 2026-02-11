@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - File Utilities
+ * Rozx Healthcare Platform - File Utilities
  * 
  * File upload and processing helpers.
  */

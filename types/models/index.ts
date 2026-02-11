@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Model Types Index
+ * Rozx Healthcare Platform - Model Types Index
  * Centralized exports for all model types
  */
 

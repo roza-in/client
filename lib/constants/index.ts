@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Constants Module Index
+ * Rozx Healthcare Platform - Constants Module Index
  */
 
 export * from './routes';
