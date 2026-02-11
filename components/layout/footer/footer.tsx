@@ -27,7 +27,7 @@ const footerLinks = {
     contact: [
         { name: '+91 79058 61940', href: 'tel:+917905861940', icon: Phone },
         { name: 'hello@rozx.in', href: 'mailto:hello@rozx.in', icon: Mail },
-        { name: 'Ambedkar Nagar, Uttar Pradesh 224155, India', href: '#', icon: MapPin },
+        { name: 'Uttar Pradesh 224155, India', href: '#', icon: MapPin },
     ],
 };
 
