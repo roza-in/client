@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Error Handler
+ * Rozx Healthcare Platform - API Error Handler
  * 
  * Custom error class and error handling utilities.
  */

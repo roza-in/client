@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { RefreshCcw, ChevronRight, Clock, CheckCircle2, AlertCircle, Mail, Phone, XCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Refund Policy | ROZX Healthcare',
+    title: 'Refund Policy | Rozx Healthcare',
     description: 'Understand our refund and cancellation policies for appointments and services.',
 };
 

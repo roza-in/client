@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Interceptors
+ * Rozx Healthcare Platform - API Interceptors
  * 
  * Request and response interceptors for the API client.
  */

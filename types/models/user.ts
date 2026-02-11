@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - User Model Types
+ * Rozx Healthcare Platform - User Model Types
  */
 
 import type {

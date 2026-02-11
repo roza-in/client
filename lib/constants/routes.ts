@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Route Constants
+ * Rozx Healthcare Platform - Route Constants
  */
 
 export {

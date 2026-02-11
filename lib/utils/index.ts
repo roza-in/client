@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Utils Module Index
+ * Rozx Healthcare Platform - Utils Module Index
  */
 
 export { cn } from './cn';

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Hooks Index
+ * Rozx Healthcare Platform - Hooks Index
  * Centralized exports for all custom hooks
  */
 

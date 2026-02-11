@@ -13,19 +13,19 @@ import { fetchFeaturedDoctors, fetchFeaturedHospitals, type PublicDoctor, type P
 // =============================================================================
 
 export const metadata: Metadata = {
-    title: 'ROZX Healthcare | Book Doctor Appointments Online | India',
+    title: 'Rozx Healthcare | Book Doctor Appointments Online | India',
     description: 'Book appointments with 10,000+ verified doctors. Video consultations and in-person visits. ABDM compliant healthcare platform.',
     keywords: ['doctor appointment', 'online consultation', 'healthcare India', 'video consultation'],
     openGraph: {
-        title: 'ROZX Healthcare | Book Doctor Appointments Online',
+        title: 'Rozx Healthcare | Book Doctor Appointments Online',
         description: 'Book appointments with verified doctors. Video & in-person consultations available.',
         type: 'website',
         locale: 'en_IN',
-        siteName: 'ROZX Healthcare',
+        siteName: 'Rozx Healthcare',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'ROZX Healthcare | Book Doctor Appointments',
+        title: 'Rozx Healthcare | Book Doctor Appointments',
         description: 'India\'s trusted healthcare platform. 10,000+ verified doctors.',
     },
     alternates: {

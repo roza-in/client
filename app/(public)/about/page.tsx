@@ -4,10 +4,10 @@ import { Heart, Shield, Zap, Target, Rocket, Code, Stethoscope, Building2, Users
 import { Logo } from '@/components/ui/logo';
 
 export const metadata: Metadata = {
-    title: 'About Us | ROZX Healthcare',
-    description: 'Learn about ROZX Healthcare - Building the future of healthcare technology in India. Our mission, vision, and the story behind the platform.',
+    title: 'About Us | Rozx Healthcare',
+    description: 'Learn about Rozx Healthcare - Building the future of healthcare technology in India. Our mission, vision, and the story behind the platform.',
     openGraph: {
-        title: 'About ROZX Healthcare',
+        title: 'About Rozx Healthcare',
         description: 'Building modern healthcare infrastructure for India',
         type: 'website',
     },

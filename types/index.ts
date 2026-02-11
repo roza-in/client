@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Types Index
+ * Rozx Healthcare Platform - Types Index
  * Centralized exports for all types used in the application
  * 
  * This is the main entry point for importing types.

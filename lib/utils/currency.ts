@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Currency Utilities
+ * Rozx Healthcare Platform - Currency Utilities
  * 
  * Indian Rupee (₹) formatting and calculations.
  */

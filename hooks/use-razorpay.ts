@@ -34,7 +34,7 @@ export const useRazorpay = () => {
             key: orderData.key,
             amount: orderData.amount,
             currency: orderData.currency,
-            name: orderData.name || "ROZX Healthcare",
+            name: orderData.name || "Rozx Healthcare",
             description: orderData.description || "Appointment Booking",
             order_id: orderData.orderId,
             handler: async function (response: any) {

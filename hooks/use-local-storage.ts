@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Local Storage Hook
+ * Rozx Healthcare Platform - Local Storage Hook
  * 
  * Type-safe local storage with SSR support and reactive updates.
  */

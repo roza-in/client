@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Authentication Hook
+ * Rozx Healthcare Platform - Authentication Hook
  * 
  * Provides authentication state and actions for the application.
  * Works with Zustand auth store and the API client.

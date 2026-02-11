@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - SEO Metadata Helpers
+ * Rozx Healthcare Platform - SEO Metadata Helpers
  * 
  * Next.js metadata generation utilities.
  */

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - API Client
+ * Rozx Healthcare Platform - API Client
  * 
  * Centralized API client using fetch with interceptors and error handling.
  */

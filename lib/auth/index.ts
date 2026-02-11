@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Auth Module Index
+ * Rozx Healthcare Platform - Auth Module Index
  */
 
 export {

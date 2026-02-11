@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Combined Providers
+ * Rozx Healthcare Platform - Combined Providers
  * 
  * Wraps all application providers in the correct order.
  */

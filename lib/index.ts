@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Lib Module Index
+ * Rozx Healthcare Platform - Lib Module Index
  * 
  * Centralized exports for all library modules.
  */

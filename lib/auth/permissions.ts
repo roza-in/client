@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Permissions & Role-Based Access
+ * Rozx Healthcare Platform - Permissions & Role-Based Access
  * 
  * Utilities for role-based access control.
  */

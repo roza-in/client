@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Public API Service
+ * Rozx Healthcare Platform - Public API Service
  * Server-side fetch functions for public data (no authentication required)
  * Used in Server Components for SSR/ISR
  */

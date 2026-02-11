@@ -24,8 +24,8 @@ export const metadata: Metadata = {
         'India healthcare',
         'ROZX',
     ],
-    authors: [{ name: 'ROZX Healthcare' }],
-    creator: 'ROZX Healthcare',
+    authors: [{ name: 'Rozx Healthcare' }],
+    creator: 'Rozx Healthcare',
     metadataBase: new URL(siteConfig.url || 'https://rozx.in'),
     openGraph: {
         type: 'website',

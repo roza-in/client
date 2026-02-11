@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Prescription Model Types
+ * Rozx Healthcare Platform - Prescription Model Types
  */
 
 import type { DocumentType } from '../enums';

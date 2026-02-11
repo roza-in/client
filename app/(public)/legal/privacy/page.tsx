@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Shield, Lock, Eye, FileText, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy | ROZX Healthcare',
-    description: 'We prioritize your privacy. Learn how ROZX Healthcare collects, uses, and protects your personal and medical data.',
+    title: 'Privacy Policy | Rozx Healthcare',
+    description: 'We prioritize your privacy. Learn how Rozx Healthcare collects, uses, and protects your personal and medical data.',
 };
 
 export default function PrivacyPage() {
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
 
                             <h2 id="section-1">1. Information We Collect</h2>
                             <p>
-                                We collect personal information that you voluntarily provide to us when you register on the ROZX Healthcare platform,
+                                We collect personal information that you voluntarily provide to us when you register on the Rozx Healthcare platform,
                                 express an interest in obtaining information about us or our products and services, when you participate in activities on the platform
                                 (such as posting messages in our online forums or entering competitions, contests or giveaways) or otherwise when you contact us.
                             </p>
@@ -148,7 +148,7 @@ export default function PrivacyPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-foreground">Mailing Address</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">ROZX Healthcare, Ambedkar Nagar, Uttar Pradesh 224155, India</p>
+                                        <p className="text-sm text-muted-foreground mt-1">Rozx Healthcare, Ambedkar Nagar, Uttar Pradesh 224155, India</p>
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Route Definitions
+ * Rozx Healthcare Platform - Route Definitions
  * 
  * Centralized route configuration for type-safe navigation.
  */

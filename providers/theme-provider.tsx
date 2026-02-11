@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Theme Provider
+ * Rozx Healthcare Platform - Theme Provider
  * 
  * Handles dark/light mode with system preference support.
  * Uses next-themes for SSR-compatible theme switching.

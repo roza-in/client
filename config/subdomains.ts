@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Subdomain Configuration
+ * Rozx Healthcare Platform - Subdomain Configuration
  * 
  * Centralized subdomain-to-path mapping for multi-subdomain architecture.
  * Supports three environments:

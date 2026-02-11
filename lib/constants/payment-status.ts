@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Payment Status Constants
+ * Rozx Healthcare Platform - Payment Status Constants
  */
 
 // =============================================================================

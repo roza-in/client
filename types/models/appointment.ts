@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Appointment Model Types
+ * Rozx Healthcare Platform - Appointment Model Types
  */
 
 import type {

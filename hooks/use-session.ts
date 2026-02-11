@@ -1,5 +1,5 @@
 /**
- * ROZX Healthcare Platform - Session Management Hook
+ * Rozx Healthcare Platform - Session Management Hook
  * 
  * Handles session initialization, persistence, and lifecycle management.
  */
