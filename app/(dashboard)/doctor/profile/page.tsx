@@ -133,7 +133,7 @@ export default function DoctorProfilePage() {
     const consultationFeeInPerson = doctor.consultationFeeInPerson || 0;
     const languages = doctor.languages || ['English', 'Hindi'];
     const bio = doctor.bio || 'No bio provided.';
-    const isVerified = doctor.verification_status === 'verified';
+    const isVerified = doctor.verificationStatus === 'verified';
     const rating = doctor.rating || 0;
     const totalRatings = doctor.totalRatings || 0;
     const totalConsultations = doctor.totalConsultations || 0;

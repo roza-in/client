@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils';
 
 interface LoadingProps {
     title?: string;
+    /**
+     * @deprecated Use 'title' instead. 'message' is kept for backward compatibility.
+     */
+    message?: string;
     description?: string;
     className?: string;
     fullscreen?: boolean;
@@ -13,10 +17,13 @@ interface LoadingProps {
 
 export function Loading({
     title = "Loading...",
+    message,
     description,
     className,
     fullscreen = true
 }: LoadingProps) {
+    // Support 'message' as an alias for 'title' for backward compatibility
+    const displayTitle = message || title;
     return (
         <div className={cn(
             "flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-all duration-300",
@@ -29,7 +36,7 @@ export function Loading({
 
             <div className="text-center space-y-2 max-w-sm px-4 animate-in slide-in-from-bottom-4 duration-500 delay-150">
                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                    {title}
+                    {displayTitle}
                 </h2>
                 {description && (
                     <p className="text-slate-500 dark:text-slate-400 text-sm animate-pulse">

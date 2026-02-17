@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Calendar, Clock, Video, Building2, User, ChevronRight, MoreVertical } from 'lucide-react';
+import { Calendar, Clock, Video, Building2, User, ChevronRight, MoreVertical, Stethoscope } from 'lucide-react';
 import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
 import { APPOINTMENT_STATUS_COLORS, getAppointmentStatusLabel } from '@/lib/constants';
 import type { AppointmentListItem } from '@/types';
@@ -40,8 +40,10 @@ export function AppointmentCard({
         switch (appointment.consultationType) {
             case 'online':
                 return <Video className="h-4 w-4" />;
-            case 'phone':
-                return <Video className="h-4 w-4" />;
+            case 'in_person':
+                return <Building2 className="h-4 w-4" />;
+            case 'walk_in':
+                return <Stethoscope className="h-4 w-4" />;
             default:
                 return <Building2 className="h-4 w-4" />;
         }

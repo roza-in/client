@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Star, MapPin, Clock, Video, Building2, ChevronRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { routes } from '@/config';
+import { publicRoutes } from '@/config';
 import type { DoctorListItem, DoctorCard as DoctorCardType } from '@/types';
 
 interface DoctorCardProps {
@@ -20,18 +20,18 @@ interface DoctorCardProps {
 
 export function DoctorCard({ doctor, variant = 'default', className }: DoctorCardProps) {
     const name = doctor.name || 'Unknown Doctor';
-    const avatar = doctor.profilePictureUrl || doctor.avatar_url || doctor.avatar;
+    const avatar = doctor.profilePictureUrl;
     // Handle specialization as either object {id, name, slug} or string
-    const specialization = typeof doctor.specialization === 'object'
-        ? doctor.specialization?.name
+    const specialization = (typeof doctor.specialization === 'object' && doctor.specialization && 'name' in doctor.specialization)
+        ? (doctor.specialization as { name: string }).name
         : doctor.specialization;
-    const qualification = doctor.qualification || doctor.qualifications?.join(', ');
+    const qualification = doctor.qualification;
     const rating = doctor.rating || 0;
-    const experience = doctor.experienceYears || doctor.experience_years || doctor.experience || 0;
+    const experience = doctor.experienceYears || 0;
     const fee = ('consultationFeeOnline' in doctor ? doctor.consultationFeeOnline : 0)
         || ('consultationFeeInPerson' in doctor ? doctor.consultationFeeInPerson : 0)
         || 0;
-    const slug = doctor.slug || doctor.id;
+    const slug = 'slug' in doctor && doctor.slug ? doctor.slug : doctor.id;
 
     const initials = name
         .split(' ')
@@ -42,7 +42,7 @@ export function DoctorCard({ doctor, variant = 'default', className }: DoctorCar
     if (variant === 'compact') {
         return (
             <Link
-                href={routes.public.doctorBySlug(slug)}
+                href={publicRoutes.doctorBySlug(String(slug))}
                 className={cn(
                     'flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors',
                     className
@@ -69,7 +69,7 @@ export function DoctorCard({ doctor, variant = 'default', className }: DoctorCar
     if (variant === 'horizontal') {
         return (
             <Link
-                href={routes.public.doctorBySlug(slug)}
+                href={publicRoutes.doctorBySlug(String(slug))}
                 className={cn(
                     'flex gap-4 rounded-xl border p-4 hover:shadow-md transition-shadow',
                     className
@@ -108,7 +108,7 @@ export function DoctorCard({ doctor, variant = 'default', className }: DoctorCar
     // Default card
     return (
         <Link
-            href={routes.public.doctorBySlug(slug)}
+            href={publicRoutes.doctorBySlug(String(slug))}
             className={cn(
                 'group block rounded-xl border p-4 hover:shadow-lg transition-all',
                 className
@@ -149,22 +149,22 @@ export function DoctorCard({ doctor, variant = 'default', className }: DoctorCar
             </div>
 
             {/* Location */}
-            {(doctor.hospitalName || doctor.hospital?.name) && (
+            {('hospitalName' in doctor && doctor.hospitalName) || ('hospital' in doctor && doctor.hospital && doctor.hospital.name) ? (
                 <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                     <Building2 className="h-4 w-4" />
-                    <span className="truncate">{doctor.hospitalName || doctor.hospital?.name}</span>
+                    <span className="truncate">{'hospitalName' in doctor && doctor.hospitalName ? doctor.hospitalName : ('hospital' in doctor && doctor.hospital && doctor.hospital.name ? doctor.hospital.name : '')}</span>
                 </div>
-            )}
+            ) : null}
 
             {/* Footer */}
             <div className="mt-4 flex items-center justify-between border-t pt-4">
                 <div className="flex items-center gap-2">
-                    {doctor.availableForVideo && (
+                    {('isAvailableForOnline' in doctor && doctor.isAvailableForOnline) || ('availableToday' in doctor && doctor.availableToday) ? (
                         <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-400">
                             <Video className="h-3 w-3" />
                             Video
                         </span>
-                    )}
+                    ) : null}
                     <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
                         <Clock className="h-3 w-3" />
                         Available

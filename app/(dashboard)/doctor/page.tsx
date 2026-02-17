@@ -43,10 +43,10 @@ function ConsultationTypeIcon({ type, className = 'h-4 w-4' }: { type: Consultat
     switch (type) {
         case 'online':
             return <Video className={`${className} text-primary`} />;
-        case 'phone':
-            return <Phone className={`${className} text-blue-500`} />;
-        case 'home_visit':
-            return <MapPin className={`${className} text-amber-500`} />;
+        case 'in_person':
+            return <Users className={`${className} text-green-500`} />;
+        case 'walk_in':
+            return <Stethoscope className={`${className} text-amber-500`} />;
         default:
             return <Users className={`${className} text-green-500`} />;
     }
@@ -58,7 +58,6 @@ function ConsultationTypeIcon({ type, className = 'h-4 w-4' }: { type: Consultat
 
 function getActionButton(appointment: AppointmentListItem) {
     const isOnline = appointment.consultationType === 'online';
-    const isPhone = appointment.consultationType === 'phone';
     const canStart = ['confirmed', 'checked_in'].includes(appointment.status);
     const isInProgress = appointment.status === 'in_progress';
 
@@ -67,15 +66,6 @@ function getActionButton(appointment: AppointmentListItem) {
             label: isInProgress ? 'Continue Call' : 'Join Video Call',
             href: `/consultation/${appointment.id}`,
             icon: Video,
-            primary: true,
-        };
-    }
-
-    if (isPhone && (canStart || isInProgress)) {
-        return {
-            label: isInProgress ? 'Continue Call' : 'Start Phone Call',
-            href: `/consultation/${appointment.id}`,
-            icon: Phone,
             primary: true,
         };
     }
