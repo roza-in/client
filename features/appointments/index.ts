@@ -6,8 +6,6 @@
 export {
     bookingApi,
     bookAppointment,
-    lockSlot,
-    releaseSlot,
     executeBookingFlow,
     verifyPaymentAndConfirm,
     checkSlotAvailability,
@@ -46,5 +44,4 @@ export {
     completeAppointmentSchema,
     appointmentFilterSchema,
     availabilityCheckSchema,
-    lockSlotSchema,
 } from './schemas';

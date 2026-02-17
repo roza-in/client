@@ -1,8 +1,11 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Package, Clock, CheckCircle } from 'lucide-react';
 import { Pagination } from '@/components/shared';
+
+export const metadata: Metadata = {
+    title: 'Pharmacy Orders',
+};
 
 export default function AdminPharmacyOrdersPage() {
     const orders = [

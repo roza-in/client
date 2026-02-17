@@ -23,12 +23,11 @@ export const endpoints = {
         refresh: '/auth/refresh',
         logout: '/auth/logout',
         me: '/auth/me',
-        profile: '/auth/profile',
-        forgotPassword: '/auth/forgot-password',
-        resetPassword: '/auth/reset-password',
-        verifyEmail: '/auth/verify-email',
+        requestPasswordReset: '/auth/password/request-reset',
+        resetPassword: '/auth/password/reset',
         googleUrl: '/auth/google/url',
         googleCallback: '/auth/google/callback',
+        csrfToken: '/auth/csrf-token',
     },
 
     // Users
@@ -37,9 +36,7 @@ export const endpoints = {
         profile: '/users/me/profile',
         updateProfile: '/users/me/profile',
         changePassword: '/users/me/password',
-        preferences: '/users/me/preferences',
-        notifications: '/users/me/notifications',
-        sessions: '/users/me/sessions',
+        deleteAccount: '/users/me',
     },
 
     // Family Members
@@ -90,11 +87,7 @@ export const endpoints = {
         complete: (id: string) => `/appointments/${id}/complete`,
         vitals: (id: string) => `/appointments/${id}/vitals`,
         checkAvailability: '/appointments/check-availability',
-        lockSlot: '/appointments/lock-slot',
-        unlockSlot: '/appointments/unlock-slot',
         feeBreakdown: '/appointments/fee-breakdown',
-        upcoming: '/appointments/upcoming',
-        history: '/appointments/history',
     },
 
     // Prescriptions
@@ -104,9 +97,6 @@ export const endpoints = {
         create: '/prescriptions',
         get: (id: string) => `/prescriptions/${id}`,
         update: (id: string) => `/prescriptions/${id}`,
-        pdf: (id: string) => `/prescriptions/${id}/pdf`,
-        send: (id: string) => `/prescriptions/${id}/send`,
-        forAppointment: (appointmentId: string) => `/prescriptions/appointment/${appointmentId}`,
     },
 
     // Payments
@@ -116,8 +106,6 @@ export const endpoints = {
         createOrder: '/payments/create-order',
         verify: '/payments/verify',
         refund: (id: string) => `/payments/${id}/refund`,
-        invoice: (id: string) => `/payments/${id}/invoice`,
-        history: '/payments/history',
     },
 
     // Health Records
@@ -131,11 +119,11 @@ export const endpoints = {
 
     // Patient Vitals
     vitals: {
-        list: '/patient-vitals',
-        create: '/patient-vitals',
-        get: (id: string) => `/patient-vitals/${id}`,
-        latest: '/patient-vitals/latest',
-        history: '/patient-vitals/history',
+        list: '/health-records/vitals',
+        create: '/health-records/vitals',
+        get: (id: string) => `/health-records/vitals/${id}`,
+        trends: '/health-records/vitals/trends',
+        delete: (id: string) => `/health-records/vitals/${id}`,
     },
 
     // Notifications
@@ -147,25 +135,19 @@ export const endpoints = {
         count: '/notifications/unread-count',
     },
 
-    // Specializations
-    specializations: {
-        list: '/specializations',
-        get: (id: string) => `/specializations/${id}`,
+    // Uploads
+    uploads: {
+        image: '/uploads/image',
+        document: '/uploads/document',
+        avatar: '/uploads/avatar',
     },
 
-    // Search
-    search: {
-        global: '/search',
-        doctors: '/search/doctors',
-        hospitals: '/search/hospitals',
-        suggestions: '/search/suggestions',
-    },
-
-    // Upload
-    upload: {
-        image: '/upload/image',
-        document: '/upload/document',
-        avatar: '/upload/avatar',
+    // Support
+    support: {
+        tickets: '/support/tickets',
+        createTicket: '/support/tickets',
+        ticket: (id: string) => `/support/tickets/${id}`,
+        messages: (id: string) => `/support/tickets/${id}/messages`,
     },
 
     // Admin

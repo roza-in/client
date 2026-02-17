@@ -61,16 +61,8 @@ export interface SearchParams {
 // Auth Response Types
 // =============================================================================
 
-export interface AuthTokens {
-    accessToken: string;
-    refreshToken: string;
-    expiresIn: number;
-    expiresAt: number;
-}
-
 export interface AuthResponse<T = UserProfile> {
     user: T;
-    tokens: AuthTokens;
     isNewUser: boolean;
 }
 
@@ -119,16 +111,14 @@ export interface DoctorProfile {
     specialization: string;
     qualification: string;
     experienceYears?: number;
-    consultationFee?: number;
+    consultationFeeOnline?: number;
+    consultationFeeInPerson?: number;
     profilePictureUrl?: string | null;
-    verification_status?: string;
-    is_active?: boolean;
-    isActive?: boolean; // Frontend normalized property
+    verificationStatus?: string;
+    isActive?: boolean;
     qualifications?: string[];
     registrationNumber?: string;
     hospital?: { name: string; city?: string; };
-    consultationFeeOnline?: number;
-    consultationFeeInPerson?: number;
     languages?: string[];
     bio?: string;
     rating?: number;
@@ -143,9 +133,8 @@ export interface HospitalProfile {
     city: string;
     state?: string;
     logoUrl?: string | null;
-    verification_status?: string;
-    is_active?: boolean;
-    isActive?: boolean; // Frontend normalized property
+    verificationStatus?: string;
+    isActive?: boolean;
 }
 
 export interface PatientProfile {

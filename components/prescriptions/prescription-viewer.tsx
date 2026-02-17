@@ -17,7 +17,6 @@ import {
     Printer,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { downloadPrescriptionPdf, sendPrescription } from '@/features/prescriptions';
 import { toast } from '@/hooks/use-toast';
 
 interface PrescriptionViewerProps {
@@ -27,27 +26,13 @@ interface PrescriptionViewerProps {
 
 export function PrescriptionViewer({ prescription, className }: PrescriptionViewerProps) {
     const handleDownload = async () => {
-        try {
-            const blob = await downloadPrescriptionPdf(prescription.id);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `prescription-${prescription.id}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-            toast.success('Prescription downloaded');
-        } catch {
-            toast.error('Failed to download prescription');
-        }
+        // TODO: PDF download endpoint not yet available on server
+        toast.error('PDF download is not available yet');
     };
 
     const handleSend = async (via: 'whatsapp' | 'email') => {
-        try {
-            await sendPrescription(prescription.id, via);
-            toast.success(`Prescription sent via ${via}`);
-        } catch {
-            toast.error('Failed to send prescription');
-        }
+        // TODO: Send prescription endpoint not yet available on server
+        toast.error('Send prescription is not available yet');
     };
 
     return (

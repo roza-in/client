@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
 import { RefreshCcw, ChevronRight, Clock, CheckCircle2, AlertCircle, Mail, Phone, XCircle } from 'lucide-react';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'Refund Policy | Rozx Healthcare',
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Refund Policy',
     description: 'Understand our refund and cancellation policies for appointments and services.',
-};
+    canonical: '/legal/refund',
+});
 
 export default function RefundPage() {
     return (

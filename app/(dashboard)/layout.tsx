@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DashboardHeader } from '@/components/layout/header/dashboard-header';
 import { Sidebar } from '@/components/layout/sidebar/sidebar';
 import { VerificationGuard } from '@/features/auth/components/verification-guard';
+import { LoadingSpinner } from '@/components/shared';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -24,7 +25,9 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
 
                 <main className={cn('flex-1 p-4 md:p-6', className)}>
                     <VerificationGuard>
-                        {children}
+                        <Suspense fallback={<LoadingSpinner size="lg" />}>
+                            {children}
+                        </Suspense>
                     </VerificationGuard>
                 </main>
             </div>

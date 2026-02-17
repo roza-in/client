@@ -4,7 +4,7 @@
  */
 
 import { api, endpoints } from '@/lib/api';
-import type { UserProfile, AuthTokens } from '@/types';
+import type { UserProfile } from '@/types';
 
 // =============================================================================
 // Types (aligned with server auth.validator.ts)
@@ -73,7 +73,6 @@ export interface RegisterHospitalAddressInput {
 
 export interface RegisterResponse {
     user: UserProfile;
-    tokens: AuthTokens;
     isNewUser: boolean;
 }
 
@@ -100,16 +99,9 @@ function normalizeUserProfile(data: Record<string, unknown>): UserProfile {
 
 function normalizeRegisterResponse(response: Record<string, unknown>): RegisterResponse {
     const userData = (response.user || response) as Record<string, unknown>;
-    const tokensData = (response.tokens || {}) as Record<string, unknown>;
 
     return {
         user: normalizeUserProfile(userData),
-        tokens: {
-            accessToken: (tokensData.accessToken ?? response.accessToken) as string || '',
-            refreshToken: (tokensData.refreshToken ?? response.refreshToken) as string || '',
-            expiresIn: (tokensData.expiresIn ?? response.expiresIn) as number || 3600,
-            expiresAt: (tokensData.expiresAt ?? response.expiresAt) as number || Date.now() + 3600000,
-        },
         isNewUser: true,
     };
 }
@@ -176,17 +168,10 @@ export async function registerHospitalAddress(input: RegisterHospitalAddressInpu
 }
 
 /**
- * Verify email with token
- */
-export async function verifyEmail(token: string): Promise<{ verified: boolean }> {
-    return api.post<{ verified: boolean }>(endpoints.auth.verifyEmail, { token });
-}
-
-/**
  * Request password reset email
  */
-export async function forgotPassword(email: string): Promise<{ sent: boolean }> {
-    return api.post<{ sent: boolean }>(endpoints.auth.forgotPassword, { email });
+export async function requestPasswordReset(email: string): Promise<{ sent: boolean }> {
+    return api.post<{ sent: boolean }>(endpoints.auth.requestPasswordReset, { email });
 }
 
 /**

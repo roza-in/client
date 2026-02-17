@@ -7,7 +7,8 @@ import type {
     ConsultationType,
     ConsultationStatus,
     BookingSource,
-    Gender
+    Gender,
+    WaitlistStatus
 } from '../enums';
 import type { DoctorProfile, HospitalProfile, PatientProfile } from '../api';
 
@@ -112,6 +113,7 @@ export interface AppointmentListItem {
     endTime: string;
     consultationType: ConsultationType;
     status: AppointmentStatus;
+    patientId: string | null;
     patientName: string | null;
     patientAvatar?: string | null;
     doctorName: string | null;
@@ -132,7 +134,6 @@ export interface AppointmentListItem {
 // =============================================================================
 
 export interface AppointmentWithDetails extends Appointment {
-    doctors: any;
     patient: PatientProfile;
     doctor: DoctorListItem;
     hospital: HospitalListItem;
@@ -249,14 +250,18 @@ export interface AppointmentWaitlist {
     id: string;
     patientId: string;
     doctorId: string;
+    hospitalId: string;
+    consultationType: ConsultationType;
     preferredDate: string;
     preferredTimeStart: string | null;
     preferredTimeEnd: string | null;
-    consultationType: ConsultationType;
-    isNotified: boolean;
+    status: WaitlistStatus;
     notifiedAt: string | null;
-    expiresAt: string;
+    bookedAppointmentId: string | null;
+    expiresAt: string | null;
+    notes: string | null;
     createdAt: string;
+    updatedAt: string;
 }
 
 // =============================================================================

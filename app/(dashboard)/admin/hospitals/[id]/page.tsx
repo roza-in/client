@@ -2,6 +2,7 @@
 
 import React, { use } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Building2, Loader2, Calendar, Users, Activity, MapPin, ExternalLink, Trash2, AlertTriangle, X } from 'lucide-react';
 import { routes } from '@/config';
@@ -159,9 +160,9 @@ export default function AdminHospitalDetailPage({ params }: PageProps) {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-start gap-5">
                             <div className="relative shrink-0">
-                                <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-linear-to-br from-primary/10 to-primary/5 shadow-inner border border-primary/20 flex items-center justify-center overflow-hidden">
+                                <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-linear-to-br from-primary/10 to-primary/5 shadow-inner border border-primary/20 flex items-center justify-center overflow-hidden">
                                     {h.logo_url ? (
-                                        <img src={h.logo_url} alt={h.name} className="h-full w-full object-cover" />
+                                        <Image src={h.logo_url} alt={h.name} fill className="object-cover" sizes="96px" />
                                     ) : (
                                         <Building2 className="h-10 w-10 md:h-12 md:w-12 text-primary/70" />
                                     )}
@@ -218,7 +219,12 @@ export default function AdminHospitalDetailPage({ params }: PageProps) {
                                 </button>
                             </div>
                             <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
-                                Registration date: {format(new Date(h.created_at), 'PP')}
+                                Registration date: {(() => {
+                                    const date = new Date(h.created_at);
+                                    return isNaN(date.getTime())
+                                        ? 'Invalid date'
+                                        : format(date, 'PP');
+                                })()}
                             </p>
                         </div>
                     </div>

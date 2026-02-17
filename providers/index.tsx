@@ -10,7 +10,7 @@ import { type ReactNode } from 'react';
 import { ThemeProvider } from './theme-provider';
 import { ToastProvider } from './toast-provider';
 import { QueryProvider } from './query-provider';
-import { AuthProvider } from './auth-provider';
+import { AuthStoreInitializer } from '@/components/auth/store-initializer';
 
 // =============================================================================
 // Types
@@ -36,9 +36,8 @@ export function Providers({ children }: ProvidersProps) {
         <QueryProvider>
             <ThemeProvider>
                 <ToastProvider>
-                    <AuthProvider>
-                        {children}
-                    </AuthProvider>
+                    <AuthStoreInitializer />
+                    {children}
                 </ToastProvider>
             </ThemeProvider>
         </QueryProvider>
@@ -52,6 +51,7 @@ export function Providers({ children }: ProvidersProps) {
 export { ThemeProvider } from './theme-provider';
 export { ToastProvider, ToasterComponent } from './toast-provider';
 export { QueryProvider, getQueryClient } from './query-provider';
-export { AuthProvider, useAuthContext } from './auth-provider';
+// Auth is now managed by Zustand store — see @/store/slices/auth.slice
+// Use useAuth() from @/hooks/use-auth for auth state
 
 export default Providers;

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     Search,
     Users,
@@ -71,12 +72,14 @@ function PatientCard({ patient }: { patient: DoctorPatient }) {
             className="flex items-center gap-4 p-5 rounded-xl border bg-card hover:shadow-md hover:border-primary/30 transition-all group"
         >
             {/* Avatar */}
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-lg font-bold shrink-0">
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-lg font-bold shrink-0">
                 {patient.avatar ? (
-                    <img
+                    <Image
                         src={patient.avatar}
                         alt={patient.name}
-                        className="h-full w-full rounded-full object-cover"
+                        fill
+                        className="rounded-full object-cover"
+                        sizes="56px"
                     />
                 ) : (
                     patient.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)

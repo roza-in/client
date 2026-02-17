@@ -14,6 +14,8 @@ export const PaymentStatus = {
     REFUNDED: 'refunded',
     PARTIALLY_REFUNDED: 'partially_refunded',
     CANCELLED: 'cancelled',
+    EXPIRED: 'expired',
+    DISPUTED: 'disputed',
 } as const;
 
 export type PaymentStatusType = (typeof PaymentStatus)[keyof typeof PaymentStatus];
@@ -30,6 +32,8 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatusType, string> = {
     refunded: 'Refunded',
     partially_refunded: 'Partially Refunded',
     cancelled: 'Cancelled',
+    expired: 'Expired',
+    disputed: 'Disputed',
 };
 
 // =============================================================================
@@ -48,6 +52,8 @@ export const PAYMENT_STATUS_COLORS: Record<PaymentStatusType, {
     refunded: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
     partially_refunded: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
     cancelled: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
+    expired: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+    disputed: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
 };
 
 // =============================================================================
@@ -57,10 +63,9 @@ export const PAYMENT_STATUS_COLORS: Record<PaymentStatusType, {
 export const PaymentMethod = {
     UPI: 'upi',
     CARD: 'card',
-    NETBANKING: 'netbanking',
+    NET_BANKING: 'net_banking',
     WALLET: 'wallet',
     CASH: 'cash',
-    CREDIT: 'patient_credit',
 } as const;
 
 export type PaymentMethodType = (typeof PaymentMethod)[keyof typeof PaymentMethod];
@@ -68,19 +73,17 @@ export type PaymentMethodType = (typeof PaymentMethod)[keyof typeof PaymentMetho
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
     upi: 'UPI',
     card: 'Credit/Debit Card',
-    netbanking: 'Net Banking',
+    net_banking: 'Net Banking',
     wallet: 'Wallet',
     cash: 'Cash',
-    patient_credit: 'Patient Credit',
 };
 
 export const PAYMENT_METHOD_ICONS: Record<PaymentMethodType, string> = {
     upi: 'Smartphone',
     card: 'CreditCard',
-    netbanking: 'Building',
+    net_banking: 'Building',
     wallet: 'Wallet',
     cash: 'Banknote',
-    patient_credit: 'BadgeDollarSign',
 };
 
 // =============================================================================
@@ -130,7 +133,7 @@ export function isRefundable(status: string): boolean {
 }
 
 export function canRetryPayment(status: string): boolean {
-    return ['failed', 'cancelled'].includes(status);
+    return ['failed', 'cancelled', 'expired'].includes(status);
 }
 
 export default PaymentStatus;

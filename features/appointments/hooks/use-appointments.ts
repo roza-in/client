@@ -75,26 +75,28 @@ export function useAppointment(id: string) {
 }
 
 /**
- * Hook to fetch upcoming appointments
+ * Hook to fetch upcoming appointments (uses list endpoint with status filter)
  */
 export function useUpcomingAppointments() {
     return useQuery({
         queryKey: appointmentKeys.upcoming(),
-        queryFn: () => api.get<AppointmentListItem[]>(endpoints.appointments.upcoming),
+        queryFn: () => api.get<AppointmentListItem[]>(endpoints.appointments.list, {
+            params: { status: 'scheduled,confirmed', sortBy: 'appointmentDate', sortOrder: 'asc' },
+        }),
         staleTime: 2 * 60 * 1000,
     });
 }
 
 /**
- * Hook to fetch appointment history
+ * Hook to fetch appointment history (uses list endpoint with status filter)
  */
 export function useAppointmentHistory(page: number = 1, limit: number = 10) {
     return useQuery({
         queryKey: [...appointmentKeys.history(), { page, limit }],
         queryFn: async () => {
             const { data, meta } = await api.getWithMeta<AppointmentListItem[]>(
-                endpoints.appointments.history,
-                { params: { page, limit } }
+                endpoints.appointments.list,
+                { params: { status: 'completed,cancelled,no_show', page, limit, sortBy: 'appointmentDate', sortOrder: 'desc' } }
             );
             return { appointments: data, pagination: meta };
         },

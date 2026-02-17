@@ -11,32 +11,21 @@ import {
     AlertTriangle,
     ArrowRight,
     Search,
-    FileText
 } from 'lucide-react';
 import { StatsCard } from '@/components/patients';
-import { routes } from '@/config';
+import { LoadingSpinner } from '@/components/shared';
+import { pharmacyRoutes } from '@/config/routes';
+import { useOrderStats, useOrders } from '@/features/pharmacy';
 
 export default function PharmacyDashboardPage() {
-    // Placeholder stats - will be replaced with actual API data
-    const stats = {
-        pendingOrders: 12,
-        completedToday: 45,
-        lowStock: 8,
-        totalRevenue: 24500,
-    };
+    const { data: stats, isLoading: statsLoading } = useOrderStats();
+    const { data: recentOrdersData, isLoading: ordersLoading } = useOrders({
+        limit: 5,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+    });
 
-    const recentOrders = [
-        { id: '1', patientName: 'Ravi Kumar', medicine: 'Paracetamol 500mg', qty: 2, status: 'pending', time: '10:30 AM' },
-        { id: '2', patientName: 'Priya Sharma', medicine: 'Amoxicillin 250mg', qty: 1, status: 'ready', time: '10:15 AM' },
-        { id: '3', patientName: 'Amit Patel', medicine: 'Metformin 500mg', qty: 3, status: 'dispensed', time: '09:45 AM' },
-        { id: '4', patientName: 'Sneha Roy', medicine: 'Omeprazole 20mg', qty: 1, status: 'pending', time: '09:30 AM' },
-    ];
-
-    const lowStockItems = [
-        { name: 'Paracetamol 500mg', currentStock: 50, minStock: 100 },
-        { name: 'Amoxicillin 500mg', currentStock: 20, minStock: 50 },
-        { name: 'Azithromycin 250mg', currentStock: 15, minStock: 30 },
-    ];
+    const recentOrders = recentOrdersData?.orders ?? [];
 
     return (
         <div className="space-y-6">
@@ -47,39 +36,47 @@ export default function PharmacyDashboardPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatsCard
-                    title="Pending Orders"
-                    value={stats.pendingOrders}
-                    icon={Clock}
-                    variant="primary"
-                />
-                <StatsCard
-                    title="Completed Today"
-                    value={stats.completedToday}
-                    icon={CheckCircle}
-                    variant="success"
-                />
-                <StatsCard
-                    title="Low Stock Items"
-                    value={stats.lowStock}
-                    icon={AlertTriangle}
-                    variant="warning"
-                />
-                <StatsCard
-                    title="Today's Revenue"
-                    value={`₹${stats.totalRevenue.toLocaleString()}`}
-                    icon={TrendingUp}
-                />
-            </div>
+            {statsLoading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="h-28 animate-pulse rounded-xl border bg-muted" />
+                    ))}
+                </div>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <StatsCard
+                        title="Pending Orders"
+                        value={stats?.pendingOrders ?? 0}
+                        icon={Clock}
+                        variant="primary"
+                    />
+                    <StatsCard
+                        title="Processing"
+                        value={stats?.processingOrders ?? 0}
+                        icon={Package}
+                        variant="warning"
+                    />
+                    <StatsCard
+                        title="Delivered"
+                        value={stats?.deliveredOrders ?? 0}
+                        icon={CheckCircle}
+                        variant="success"
+                    />
+                    <StatsCard
+                        title="Total Revenue"
+                        value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
+                        icon={TrendingUp}
+                    />
+                </div>
+            )}
 
             <div className="grid gap-6 lg:grid-cols-3">
                 {/* Recent Orders */}
                 <div className="lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold">Recent Prescription Orders</h2>
+                        <h2 className="text-lg font-semibold">Recent Orders</h2>
                         <Link
-                            href={routes.pharmacy?.orders || '/pharmacy/orders'}
+                            href={pharmacyRoutes.orders}
                             className="text-sm text-primary hover:underline flex items-center gap-1"
                         >
                             View all
@@ -87,51 +84,58 @@ export default function PharmacyDashboardPage() {
                         </Link>
                     </div>
 
-                    {recentOrders.length === 0 ? (
+                    {ordersLoading ? (
+                        <div className="flex justify-center py-8">
+                            <LoadingSpinner />
+                        </div>
+                    ) : recentOrders.length === 0 ? (
                         <div className="rounded-xl border p-8 text-center text-muted-foreground">
                             No pending orders at the moment.
                         </div>
                     ) : (
                         <div className="rounded-xl border divide-y">
                             {recentOrders.map((order) => (
-                                <div key={order.id} className="flex items-center gap-4 p-4">
+                                <Link
+                                    key={order.id}
+                                    href={pharmacyRoutes.order(order.id)}
+                                    className="flex items-center gap-4 p-4 hover:bg-muted/50"
+                                >
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
                                         <Pill className="h-5 w-5" />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium">{order.patientName}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium truncate">{order.patientName}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            {order.medicine} × {order.qty}
+                                            {order.orderNumber ?? order.id.slice(0, 8)} · {order.itemCount} items
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm">{order.time}</p>
-                                        <span className={`inline-block rounded-full px-2 py-0.5 text-xs mt-1 ${order.status === 'dispensed'
-                                                ? 'bg-green-100 text-green-700'
-                                                : order.status === 'ready'
-                                                    ? 'bg-blue-100 text-blue-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                            }`}>
-                                            {order.status}
+                                        <p className="text-sm font-medium">₹{order.totalAmount.toLocaleString()}</p>
+                                        <span
+                                            className={`inline-block rounded-full px-2 py-0.5 text-xs mt-1 ${
+                                                order.status === 'delivered'
+                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                    : order.status === 'cancelled'
+                                                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                            }`}
+                                        >
+                                            {order.status.replace(/_/g, ' ')}
                                         </span>
                                     </div>
-                                    <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted">
-                                        {order.status === 'pending' ? 'Process' : 'View'}
-                                    </button>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {/* Quick Actions & Alerts */}
+                {/* Quick Actions */}
                 <div className="space-y-6">
-                    {/* Quick Actions */}
                     <div>
                         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
                         <div className="space-y-3">
                             <Link
-                                href={routes.pharmacy?.orders || '/pharmacy/orders'}
+                                href={pharmacyRoutes.orders}
                                 className="flex items-center gap-3 rounded-xl border p-4 hover:bg-muted/50"
                             >
                                 <ShoppingCart className="h-5 w-5 text-primary" />
@@ -141,7 +145,7 @@ export default function PharmacyDashboardPage() {
                                 </div>
                             </Link>
                             <Link
-                                href={routes.pharmacy?.inventory || '/pharmacy/inventory'}
+                                href={pharmacyRoutes.inventory}
                                 className="flex items-center gap-3 rounded-xl border p-4 hover:bg-muted/50"
                             >
                                 <Package className="h-5 w-5 text-blue-600" />
@@ -151,7 +155,7 @@ export default function PharmacyDashboardPage() {
                                 </div>
                             </Link>
                             <Link
-                                href={routes.pharmacy?.search || '/pharmacy/search'}
+                                href={pharmacyRoutes.search || pharmacyRoutes.inventory}
                                 className="flex items-center gap-3 rounded-xl border p-4 hover:bg-muted/50"
                             >
                                 <Search className="h-5 w-5 text-green-600" />
@@ -163,28 +167,26 @@ export default function PharmacyDashboardPage() {
                         </div>
                     </div>
 
-                    {/* Low Stock Alert */}
+                    {/* Stats Summary */}
                     <div className="rounded-xl border p-4">
                         <div className="flex items-center gap-2 mb-3">
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                            <h3 className="font-semibold">Low Stock Alert</h3>
+                            <h3 className="font-semibold">Order Summary</h3>
                         </div>
                         <div className="space-y-2 text-sm">
-                            {lowStockItems.map((item) => (
-                                <div key={item.name} className="flex justify-between">
-                                    <span className="text-muted-foreground">{item.name}</span>
-                                    <span className="font-medium text-yellow-600">
-                                        {item.currentStock} left
-                                    </span>
-                                </div>
-                            ))}
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Total Orders</span>
+                                <span className="font-medium">{stats?.totalOrders ?? 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Cancelled</span>
+                                <span className="font-medium text-red-600">{stats?.cancelledOrders ?? 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Avg. Order Value</span>
+                                <span className="font-medium">₹{(stats?.averageOrderValue ?? 0).toLocaleString()}</span>
+                            </div>
                         </div>
-                        <Link
-                            href={routes.pharmacy?.inventory || '/pharmacy/inventory'}
-                            className="block text-center text-sm text-primary hover:underline mt-3"
-                        >
-                            View all low stock items
-                        </Link>
                     </div>
                 </div>
             </div>

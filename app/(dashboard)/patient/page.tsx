@@ -1,42 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { format, formatDistanceToNow, isToday, isTomorrow } from 'date-fns';
 import { Calendar, Clock, Video, Building2, ArrowRight, Plus, ChevronRight, Loader2, Star, AlertCircle, Sparkles, Heart, Activity, MapPin, ExternalLink } from 'lucide-react';
 import { routes } from '@/config';
-import { patientsApi, type PatientDashboardData } from '@/lib/api/patients';
-import { fetchFeaturedDoctors, type PublicDoctor } from '@/lib/api/public';
-import { toast } from 'sonner';
+import { usePatientDashboard } from '@/features/patients';
+import { useFeaturedDoctors } from '@/features/doctors';
 
 export default function PatientDashboardPage() {
-    const [data, setData] = useState<PatientDashboardData | null>(null);
-    const [recommendedDoctors, setRecommendedDoctors] = useState<PublicDoctor[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data, isLoading, error: queryError } = usePatientDashboard();
+    const { data: recommendedDoctors = [] } = useFeaturedDoctors(4);
+    
 
-    useEffect(() => {
-        async function loadDashboard() {
-            try {
-                setLoading(true);
-                const [dashboardResult, doctorsResult] = await Promise.all([
-                    patientsApi.fetchPatientDashboard(),
-                    fetchFeaturedDoctors(4).catch(() => [])
-                ]);
-                setData(dashboardResult);
-                setRecommendedDoctors(doctorsResult);
-            } catch (err: any) {
-                console.error('Failed to load dashboard:', err);
-                setError(err.message || 'Failed to load dashboard');
-                toast.error('Failed to load dashboard');
-            } finally {
-                setLoading(false);
-            }
-        }
-        loadDashboard();
-    }, []);
-
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
@@ -45,12 +22,13 @@ export default function PatientDashboardPage() {
         );
     }
 
-    if (error || !data) {
+    if (queryError || !data) {
+        const errorMsg = queryError instanceof Error ? queryError.message : 'Could not load dashboard';
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
                 <h2 className="font-semibold mb-1">Something went wrong</h2>
-                <p className="text-sm text-muted-foreground mb-4">{error || 'Could not load dashboard'}</p>
+                <p className="text-sm text-muted-foreground mb-4">{errorMsg}</p>
                 <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
                     Try Again
                 </button>
@@ -118,7 +96,7 @@ export default function PatientDashboardPage() {
                                 <div className="flex items-center justify-between pt-4 border-t border-white/20">
                                     <div className="flex items-center gap-4">
                                         {nextAppointment.doctorAvatar ? (
-                                            <img src={nextAppointment.doctorAvatar} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                                            <Image src={nextAppointment.doctorAvatar} alt="" width={48} height={48} className="h-12 w-12 rounded-xl object-cover" />
                                         ) : (
                                             <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center text-lg font-bold">
                                                 {nextAppointment.doctorName?.charAt(0) || 'D'}
@@ -240,8 +218,8 @@ export default function PatientDashboardPage() {
                                         className="bg-card rounded-xl border p-4 hover:border-primary/30 hover:shadow-sm transition-all group"
                                     >
                                         <div className="flex gap-3">
-                                            {doctor.avatar_url ? (
-                                                <img src={doctor.avatar_url} alt={doctor.name} className="h-12 w-12 rounded-xl object-cover" />
+                                            {doctor.profilePictureUrl ? (
+                                                <Image src={doctor.profilePictureUrl} alt={doctor.name} width={48} height={48} className="h-12 w-12 rounded-xl object-cover" />
                                             ) : (
                                                 <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-bold text-primary">
                                                     {doctor.name?.charAt(0) || 'D'}
@@ -252,15 +230,15 @@ export default function PatientDashboardPage() {
                                                     Dr. {doctor.name}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground truncate">
-                                                    {typeof doctor.specialization === 'object' ? doctor.specialization?.name : doctor.specialization || 'General'}
+                                                    {doctor.specialization || 'General'}
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="flex items-center gap-0.5 text-xs text-amber-600">
                                                         <Star className="h-3 w-3 fill-current" />
-                                                        {doctor.rating?.toFixed(1) || '4.5'}
+                                                        {doctor.rating ? doctor.rating.toFixed(1) : 'N/A'}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        ₹{doctor.consultation_fee_in_person || doctor.consultation_fee_online || 500}
+                                                        ₹{doctor.consultationFeeInPerson || doctor.consultationFeeOnline || 500}
                                                     </span>
                                                 </div>
                                             </div>

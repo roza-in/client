@@ -46,6 +46,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             title,
             description,
         },
+        alternates: {
+            canonical: '/doctors',
+        },
     };
 }
 

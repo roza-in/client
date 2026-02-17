@@ -7,8 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:enums": "npx tsx scripts/check-enum-consistency.ts",
+    "test:endpoints": "npx tsx scripts/check-dead-endpoints.ts",
+    "test:bundle": "npx tsx scripts/check-bundle-size.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -49,9 +55,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "happy-dom": "^20.6.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }

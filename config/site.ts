@@ -12,7 +12,7 @@ import env from "./env";
 
 export const siteConfig = {
     // Basic Info
-    name: 'Rozx Healthcare',
+    name: 'ROZX Healthcare',
     shortName: 'ROZX',
     tagline: 'Healthcare Made Simple',
     description: 'Book doctor appointments online. Connect with verified doctors, hospitals, and healthcare providers. Video consultations, prescriptions, and health records - all in one place.',
@@ -62,8 +62,8 @@ export const siteConfig = {
 // =============================================================================
 
 export const seoConfig = {
-    titleTemplate: '%s | Rozx Healthcare',
-    defaultTitle: 'Rozx Healthcare - Book Doctor Appointments Online',
+    titleTemplate: '%s | ROZX Healthcare',
+    defaultTitle: 'ROZX Healthcare - Book Doctor Appointments Online',
     keywords: [
         'Healthcare',
         'Doctor Appointment',
@@ -72,12 +72,15 @@ export const seoConfig = {
         'Telemedicine',
         'Online Consultation',
         'India',
+        'ROZX',
+        'Book Doctor Online',
+        'Video Consultation',
     ],
 
     openGraph: {
         type: 'website',
         locale: 'en_IN',
-        siteName: 'Rozx Healthcare',
+        siteName: 'ROZX Healthcare',
         images: [
             {
                 url: '/images/og-image.png',
@@ -99,7 +102,7 @@ export const seoConfig = {
         { name: 'apple-mobile-web-app-title', content: 'ROZX' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'mobile-web-app-capable', content: 'yes' },
-        { name: 'theme-color', content: '#0F766E' },
+        { name: 'theme-color', content: '#10b981' },
     ],
 
     additionalLinkTags: [

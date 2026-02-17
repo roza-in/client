@@ -1,10 +1,13 @@
 import { Metadata } from 'next';
 import { HelpCircle, ChevronDown, MessageCircle } from 'lucide-react';
+import { generateFAQSchema, generateBreadcrumbSchema, generateJsonLd } from '@/lib/seo';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'FAQs | ROZX Healthcare',
+export const metadata: Metadata = generatePageMetadata({
+    title: 'FAQs',
     description: 'Frequently asked questions about ROZX Healthcare. Find answers for patients, doctors, and hospital partners.',
-};
+    canonical: '/faqs',
+});
 
 const faqSections = [
     {
@@ -53,8 +56,27 @@ const faqSections = [
 ];
 
 export default function FAQPage() {
+    // Flatten all Q&As for FAQ schema
+    const allFaqs = faqSections.flatMap((s) =>
+        s.qas.map((qa) => ({ question: qa.q, answer: qa.a }))
+    );
+
+    const jsonLd = generateJsonLd([
+        generateFAQSchema(allFaqs),
+        generateBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'FAQs' },
+        ]),
+    ]);
+
     return (
         <div className="space-y-0">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLd }}
+            />
+
             {/* Hero Section */}
             <section className="py-16 bg-linear-to-br from-primary/5 via-transparent to-primary/10">
                 <div className="container">

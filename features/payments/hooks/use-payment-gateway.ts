@@ -21,6 +21,30 @@ import { toast } from '@/hooks/use-toast';
 import { getErrorMessage } from '@/lib/api';
 
 // =============================================================================
+// Razorpay Script Loader
+// =============================================================================
+
+let razorpayScriptPromise: Promise<void> | null = null;
+
+function loadRazorpayScript(): Promise<void> {
+    if (window.Razorpay) return Promise.resolve();
+    if (razorpayScriptPromise) return razorpayScriptPromise;
+
+    razorpayScriptPromise = new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+            razorpayScriptPromise = null;
+            reject(new Error('Failed to load Razorpay SDK'));
+        };
+        document.head.appendChild(script);
+    });
+    return razorpayScriptPromise;
+}
+
+// =============================================================================
 // Types
 // =============================================================================
 
@@ -117,8 +141,10 @@ export function usePaymentGateway() {
                 }
 
                 // Razorpay: Open checkout modal
+                await loadRazorpayScript();
+
                 if (!window.Razorpay) {
-                    throw new Error('Razorpay SDK not loaded');
+                    throw new Error('Razorpay SDK failed to initialize');
                 }
 
                 if (!order.keyId) {

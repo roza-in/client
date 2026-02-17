@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { routes } from '@/config';
 
 export default function HospitalSettingsPage() {
-    redirect('/hospital/settings/profile');
+    redirect(`${routes.hospital.settings}/profile`);
 }

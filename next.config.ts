@@ -8,6 +8,29 @@ const nextConfig: NextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
+  // Allowed Dev Origins
+  allowedDevOrigins: [
+    "localhost:3000",
+    "rozx.local:3000",
+    "rozx.local",
+    "www.rozx.local:3000",
+    "www.rozx.local",
+    "patient.rozx.local:3000",
+    "patient.rozx.local",
+    "doctor.rozx.local:3000",
+    "doctor.rozx.local",
+    "hospital.rozx.local:3000",
+    "hospital.rozx.local",
+    "reception.rozx.local:3000",
+    "reception.rozx.local",
+    "pharmacy.rozx.local:3000",
+    "pharmacy.rozx.local",
+    "admin.rozx.local:3000",
+    "admin.rozx.local",
+    "meet.rozx.local:3000",
+    "meet.rozx.local"
+  ],
+
   // Optimize images
   images: {
     formats: ["image/avif", "image/webp"],
@@ -33,47 +56,50 @@ const nextConfig: NextConfig = {
     const backendUrl = env.apiUrl;
     const baseDomain = env.baseDomain;
 
+    // Shared exclusion list for static assets and Next.js internals
+    const staticExclude = '_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images|icons|fonts';
+
     const subdomainRewrites = [
-      // patient.rozx.in/* → /patient/*
+      // patient.rozx.in/* → /patient/*  (skip if path already starts with /patient)
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `patient.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|patient).*)*`,
+        has: [{ type: 'host' as const, value: `patient.${baseDomain}(:\\d+)?` }],
         destination: '/patient/:path*',
       },
       // doctor.rozx.in/* → /doctor/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `doctor.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|doctor).*)*`,
+        has: [{ type: 'host' as const, value: `doctor.${baseDomain}(:\\d+)?` }],
         destination: '/doctor/:path*',
       },
       // hospital.rozx.in/* → /hospital/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `hospital.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|hospital).*)*`,
+        has: [{ type: 'host' as const, value: `hospital.${baseDomain}(:\\d+)?` }],
         destination: '/hospital/:path*',
       },
       // reception.rozx.in/* → /reception/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `reception.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|reception).*)*`,
+        has: [{ type: 'host' as const, value: `reception.${baseDomain}(:\\d+)?` }],
         destination: '/reception/:path*',
       },
       // admin.rozx.in/* → /admin/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `admin.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|admin).*)*`,
+        has: [{ type: 'host' as const, value: `admin.${baseDomain}(:\\d+)?` }],
         destination: '/admin/:path*',
       },
       // meet.rozx.in/* → /consultation/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `meet.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|consultation).*)*`,
+        has: [{ type: 'host' as const, value: `meet.${baseDomain}(:\\d+)?` }],
         destination: '/consultation/:path*',
       },
       // pharmacy.rozx.in/* → /pharmacy/*
       {
-        source: '/:path((?!_next|api|favicon.ico|manifest.webmanifest|robots.txt|logo|images).*)',
-        has: [{ type: 'host' as const, value: `pharmacy.${baseDomain}` }],
+        source: `/:path((?!${staticExclude}|pharmacy).*)*`,
+        has: [{ type: 'host' as const, value: `pharmacy.${baseDomain}(:\\d+)?` }],
         destination: '/pharmacy/:path*',
       },
     ];

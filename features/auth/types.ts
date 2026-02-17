@@ -5,7 +5,6 @@
 // Re-export from shared types
 export type {
     UserProfile,
-    AuthTokens,
     AuthResponse,
 } from '@/types';
 

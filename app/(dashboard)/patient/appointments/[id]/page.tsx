@@ -14,8 +14,7 @@ import { cn } from '@/lib/utils';
 import { appointmentsApi } from '@/lib/api';
 import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@/lib/constants/appointment-status';
 import { AppointmentWithDetails } from '@/types/models/appointment';
-import { useRazorpay } from '@/hooks/use-razorpay';
-import { bookingApi } from '@/features/appointments';
+import { usePaymentGateway } from '@/features/payments';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -29,39 +28,20 @@ export default function AppointmentDetailPage() {
     const [appointment, setAppointment] = useState<AppointmentWithDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const { initiatePayment } = useRazorpay();
+    const { initiatePayment, isProcessing } = usePaymentGateway();
 
     const handlePayNow = async () => {
         if (!appointment) return;
 
-        try {
-            setIsProcessing(true);
-            toast.loading("Initializing payment...");
-
-            // Get payment config
-            const config = await bookingApi.getPaymentConfig(appointment.id);
-            toast.dismiss();
-
-            initiatePayment({
-                key: config.provider === 'razorpay' ? config.key_id! : '',
-                amount: config.amount,
-                currency: config.currency,
-                orderId: config.order_id!,
-                prefill: config.prefill
-            }, appointment.id, {
-                onSuccess: () => {
-                    // Refresh appointment details on success
-                    fetchAppointmentDetails();
-                }
-            });
-        } catch (error: any) {
-            toast.dismiss();
-            toast.error(error.message || "Failed to initialize payment");
-        } finally {
-            setIsProcessing(false);
-        }
+        initiatePayment({
+            appointmentId: appointment.id,
+            onSuccess: () => {
+                fetchAppointmentDetails();
+            },
+            onFailure: (error) => {
+                toast.error(error.message || "Failed to process payment");
+            },
+        });
     };
 
     async function fetchAppointmentDetails() {

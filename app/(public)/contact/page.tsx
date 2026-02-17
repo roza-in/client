@@ -1,16 +1,15 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Clock, Send, MessageCircle, Linkedin, Twitter, Instagram, Github, HelpCircle, Building2, Stethoscope, User, ChevronDown } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, MessageCircle, Linkedin, Twitter, Instagram, Github, HelpCircle, Building2, Stethoscope, User, ChevronDown } from 'lucide-react';
+import { ContactForm } from '@/components/shared/contact-form';
+import { generatePageMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/config/site';
 
-export const metadata: Metadata = {
-    title: 'Contact Us | Rozx Healthcare',
-    description: 'Get in touch with Rozx Healthcare. We are here to help patients, doctors, and hospitals with any questions or support needs.',
-    openGraph: {
-        title: 'Contact Rozx Healthcare',
-        description: 'Reach out for support, partnerships, or general inquiries',
-        type: 'website',
-    },
-};
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Contact Us',
+    description: 'Get in touch with ROZX Healthcare. We are here to help patients, doctors, and hospitals with any questions or support needs.',
+    canonical: '/contact',
+});
 
 const quickLinks = [
     {
@@ -172,7 +171,7 @@ export default function ContactPage() {
                                 </p>
                                 <div className="flex gap-3">
                                     <a
-                                        href="https://www.instagram.com/shivammauryain/"
+                                        href={siteConfig.social.instagram}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-105"
@@ -181,7 +180,7 @@ export default function ContactPage() {
                                         <Instagram className="h-5 w-5" />
                                     </a>
                                     <a
-                                        href="https://www.linkedin.com/in/shivammauryain/"
+                                        href={siteConfig.social.linkedin}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-105"
@@ -190,7 +189,7 @@ export default function ContactPage() {
                                         <Linkedin className="h-5 w-5" />
                                     </a>
                                     <a
-                                        href="https://twitter.com/shivammauryain"
+                                        href={siteConfig.social.twitter}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-105"
@@ -199,11 +198,9 @@ export default function ContactPage() {
                                         <Twitter className="h-5 w-5" />
                                     </a>
                                     <a
-                                        href="https://github.com/shivammauryain"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                        href={`mailto:${siteConfig.contact.email}`}
                                         className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-105"
-                                        aria-label="GitHub"
+                                        aria-label="Email"
                                     >
                                         <Github className="h-5 w-5" />
                                     </a>
@@ -215,72 +212,7 @@ export default function ContactPage() {
                         <div className="rounded-xl border bg-background p-6 lg:p-8 shadow-sm">
                             <h2 className="text-xl font-bold mb-6">Send us a Message</h2>
 
-                            <form className="space-y-5">
-                                <div className="grid gap-5 sm:grid-cols-2">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1.5">Name</label>
-                                        <input
-                                            type="text"
-                                            className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                            placeholder="Your name"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1.5">Phone</label>
-                                        <input
-                                            type="tel"
-                                            className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                            placeholder="+91 79058 XXXXX"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5">Email</label>
-                                    <input
-                                        type="email"
-                                        className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        placeholder="you@example.com"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5">Subject</label>
-                                    <select className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                                        <option value="">Select a topic</option>
-                                        <option value="patient">Patient Support</option>
-                                        <option value="doctor">Doctor Onboarding</option>
-                                        <option value="hospital">Hospital Partnership</option>
-                                        <option value="technical">Technical Support</option>
-                                        <option value="feedback">Feedback</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5">Message</label>
-                                    <textarea
-                                        rows={5}
-                                        className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none transition-all"
-                                        placeholder="How can we help you?"
-                                    />
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-md active:scale-[0.98]"
-                                >
-                                    <Send className="h-4 w-4" />
-                                    Send Message
-                                </button>
-
-                                <p className="text-xs text-center text-muted-foreground px-4">
-                                    By submitting this form, you agree to our{' '}
-                                    <Link href="/privacy" className="text-primary hover:underline font-medium">
-                                        Privacy Policy
-                                    </Link>
-                                </p>
-                            </form>
+                            <ContactForm />
                         </div>
                     </div>
                 </div>

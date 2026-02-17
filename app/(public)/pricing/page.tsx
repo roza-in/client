@@ -2,11 +2,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Check, X, Info, ArrowRight, Wallet, Activity, CreditCard, Building2, Video, Users, ChevronDown } from 'lucide-react';
 import { routes } from '@/config';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'Pricing | ROZX Healthcare',
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Pricing',
     description: 'Transparent pricing for patients and providers. No hidden fees, pay only when you earn.',
-};
+    canonical: '/pricing',
+});
 
 export default function PricingPage() {
     return (

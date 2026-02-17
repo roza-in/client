@@ -1,20 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-    Play,
-    Video,
-    Users,
-    ChevronRight,
-    Clock,
-    Calendar,
-    User,
-    Activity,
-    Phone,
-    MapPin,
-    Stethoscope,
-    ClipboardList,
-} from 'lucide-react';
+import { Video, Users, ChevronRight, Clock, Calendar, User, Phone, MapPin, Stethoscope } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useDoctorSchedule, type DayOfWeek } from '@/features/schedules';
 import { useAppointments } from '@/features/appointments';
@@ -268,174 +255,165 @@ export default function DoctorDashboardPage() {
     const isLoading = isLoadingToday || isLoadingUpcoming;
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-                    <p className="text-muted-foreground">
-                        {format(today, 'EEEE, MMMM d, yyyy')}
-                    </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content - Today's Appointments */}
+            <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-900">Today's Appointments</h2>
+                    <Link
+                        href="/doctor/appointments"
+                        className="text-sm font-medium text-primary hover:underline underline-offset-4"
+                    >
+                        View All
+                    </Link>
                 </div>
+
+                {isLoadingToday ? (
+                    <div className="flex justify-center py-12">
+                        <LoadingSpinner size="lg" />
+                    </div>
+                ) : todayAppointments.length > 0 ? (
+                    <div className="space-y-3">
+                        {todayAppointments.map((appointment) => (
+                            <AppointmentCard key={appointment.id} appointment={appointment} />
+                        ))}
+                    </div>
+                ) : (
+                    <EmptyState
+                        icon={Calendar}
+                        title="No appointments today"
+                        description="You don't have any scheduled appointments for today."
+                    />
+                )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+
+                {/* Quick Stats */}
                 <QuickStatsBar
                     todayCount={stats.today}
                     upcomingCount={stats.upcoming}
                     completedCount={stats.completed}
                 />
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content - Today's Appointments */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-slate-900">Today's Appointments</h2>
+                {/* Today's Schedule */}
+                <div className="rounded-xl border bg-card p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-slate-900">Today's Schedule</h3>
+                        <Link
+                            href="/doctor/schedule"
+                            className="text-xs font-medium text-primary hover:underline"
+                        >
+                            View Full
+                        </Link>
+                    </div>
+
+                    {isLoadingSchedule ? (
+                        <div className="flex justify-center py-4">
+                            <LoadingSpinner size="sm" />
+                        </div>
+                    ) : todaySchedules.length > 0 ? (
+                        <div className="space-y-2">
+                            {todaySchedules.map((slot: any) => (
+                                <div
+                                    key={slot.id}
+                                    className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10"
+                                >
+                                    <Clock className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium text-slate-900">
+                                        {slot.startTime} - {slot.endTime}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            No schedule for today
+                        </p>
+                    )}
+                </div>
+
+                {/* Upcoming Appointments */}
+                <div className="rounded-xl border bg-card p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-slate-900">Upcoming</h3>
                         <Link
                             href="/doctor/appointments"
-                            className="text-sm font-medium text-primary hover:underline underline-offset-4"
+                            className="text-xs font-medium text-primary hover:underline"
                         >
                             View All
                         </Link>
                     </div>
 
-                    {isLoadingToday ? (
-                        <div className="flex justify-center py-12">
-                            <LoadingSpinner size="lg" />
+                    {isLoadingUpcoming ? (
+                        <div className="flex justify-center py-4">
+                            <LoadingSpinner size="sm" />
                         </div>
-                    ) : todayAppointments.length > 0 ? (
+                    ) : upcomingAppointments.length > 0 ? (
                         <div className="space-y-3">
-                            {todayAppointments.map((appointment) => (
-                                <AppointmentCard key={appointment.id} appointment={appointment} />
+                            {upcomingAppointments.map((apt) => (
+                                <Link
+                                    key={apt.id}
+                                    href={`/doctor/appointments/${apt.id}`}
+                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+                                >
+                                    <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0 group-hover:bg-primary/10 group-hover:text-primary">
+                                        {(apt.patientName || 'P').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-900 truncate">
+                                            {apt.patientName || 'Patient'}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {format(new Date(apt.appointmentDate), 'MMM d')} • {format(new Date(`2026-01-01T${apt.startTime}`), 'h:mm a')}
+                                        </p>
+                                    </div>
+                                    <ConsultationTypeIcon type={apt.consultationType as ConsultationType} className="h-4 w-4" />
+                                </Link>
                             ))}
                         </div>
                     ) : (
-                        <EmptyState
-                            icon={Calendar}
-                            title="No appointments today"
-                            description="You don't have any scheduled appointments for today."
-                        />
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                            No upcoming appointments
+                        </p>
                     )}
                 </div>
 
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Today's Schedule */}
-                    <div className="rounded-xl border bg-card p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-slate-900">Today's Schedule</h3>
-                            <Link
-                                href="/doctor/schedule"
-                                className="text-xs font-medium text-primary hover:underline"
-                            >
-                                View Full
-                            </Link>
-                        </div>
-
-                        {isLoadingSchedule ? (
-                            <div className="flex justify-center py-4">
-                                <LoadingSpinner size="sm" />
+                {/* Quick Actions */}
+                <div className="rounded-xl border bg-card p-5">
+                    <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                    <div className="space-y-2">
+                        <Link
+                            href="/doctor/patients"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                            <div className="h-9 w-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <Users className="h-4 w-4 text-blue-600" />
                             </div>
-                        ) : todaySchedules.length > 0 ? (
-                            <div className="space-y-2">
-                                {todaySchedules.map((slot: any) => (
-                                    <div
-                                        key={slot.id}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10"
-                                    >
-                                        <Clock className="h-4 w-4 text-primary" />
-                                        <span className="text-sm font-medium text-slate-900">
-                                            {slot.startTime} - {slot.endTime}
-                                        </span>
-                                    </div>
-                                ))}
+                            <span className="text-sm font-medium text-slate-900">My Patients</span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                        </Link>
+                        <Link
+                            href="/doctor/schedule"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                            <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
+                                <Calendar className="h-4 w-4 text-green-600" />
                             </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                                No schedule for today
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Upcoming Appointments */}
-                    <div className="rounded-xl border bg-card p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-slate-900">Upcoming</h3>
-                            <Link
-                                href="/doctor/appointments"
-                                className="text-xs font-medium text-primary hover:underline"
-                            >
-                                View All
-                            </Link>
-                        </div>
-
-                        {isLoadingUpcoming ? (
-                            <div className="flex justify-center py-4">
-                                <LoadingSpinner size="sm" />
+                            <span className="text-sm font-medium text-slate-900">My Schedule</span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                        </Link>
+                        <Link
+                            href="/doctor/profile"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                            <div className="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                                <User className="h-4 w-4 text-amber-600" />
                             </div>
-                        ) : upcomingAppointments.length > 0 ? (
-                            <div className="space-y-3">
-                                {upcomingAppointments.map((apt) => (
-                                    <Link
-                                        key={apt.id}
-                                        href={`/doctor/appointments/${apt.id}`}
-                                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                                    >
-                                        <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0 group-hover:bg-primary/10 group-hover:text-primary">
-                                            {(apt.patientName || 'P').charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-slate-900 truncate">
-                                                {apt.patientName || 'Patient'}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {format(new Date(apt.appointmentDate), 'MMM d')} • {format(new Date(`2026-01-01T${apt.startTime}`), 'h:mm a')}
-                                            </p>
-                                        </div>
-                                        <ConsultationTypeIcon type={apt.consultationType as ConsultationType} className="h-4 w-4" />
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                                No upcoming appointments
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="rounded-xl border bg-card p-5">
-                        <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
-                        <div className="space-y-2">
-                            <Link
-                                href="/doctor/patients"
-                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                            >
-                                <div className="h-9 w-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                                    <Users className="h-4 w-4 text-blue-600" />
-                                </div>
-                                <span className="text-sm font-medium text-slate-900">My Patients</span>
-                                <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
-                            </Link>
-                            <Link
-                                href="/doctor/schedule"
-                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                            >
-                                <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
-                                    <Calendar className="h-4 w-4 text-green-600" />
-                                </div>
-                                <span className="text-sm font-medium text-slate-900">My Schedule</span>
-                                <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
-                            </Link>
-                            <Link
-                                href="/doctor/profile"
-                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                            >
-                                <div className="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center">
-                                    <User className="h-4 w-4 text-amber-600" />
-                                </div>
-                                <span className="text-sm font-medium text-slate-900">My Profile</span>
-                                <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
-                            </Link>
-                        </div>
+                            <span className="text-sm font-medium text-slate-900">My Profile</span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                        </Link>
                     </div>
                 </div>
             </div>

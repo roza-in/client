@@ -6,11 +6,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import {
-    getDashboardStats,
-    getRevenueAnalytics,
+    getAnalyticsOverview,
+    getRevenueTrends,
     getAppointmentTrends,
-    getTopDoctors,
-    getPatientDemographics,
+    getUserTrends,
     type AnalyticsParams,
 } from '../api/analytics';
 
@@ -20,11 +19,10 @@ import {
 
 export const analyticsKeys = {
     all: ['analytics'] as const,
-    dashboard: (params: AnalyticsParams) => [...analyticsKeys.all, 'dashboard', params] as const,
+    overview: (params: AnalyticsParams) => [...analyticsKeys.all, 'overview', params] as const,
     revenue: (params: AnalyticsParams) => [...analyticsKeys.all, 'revenue', params] as const,
-    trends: (params: AnalyticsParams) => [...analyticsKeys.all, 'trends', params] as const,
-    topDoctors: (params: AnalyticsParams) => [...analyticsKeys.all, 'top-doctors', params] as const,
-    demographics: () => [...analyticsKeys.all, 'demographics'] as const,
+    appointments: (params: AnalyticsParams) => [...analyticsKeys.all, 'appointments', params] as const,
+    users: (params: AnalyticsParams) => [...analyticsKeys.all, 'users', params] as const,
 };
 
 // =============================================================================
@@ -32,23 +30,23 @@ export const analyticsKeys = {
 // =============================================================================
 
 /**
- * Hook to fetch dashboard stats
+ * Hook to fetch analytics overview
  */
-export function useDashboardStats(params?: AnalyticsParams) {
+export function useAnalyticsOverview(params?: AnalyticsParams) {
     return useQuery({
-        queryKey: analyticsKeys.dashboard(params || {}),
-        queryFn: () => getDashboardStats(params),
+        queryKey: analyticsKeys.overview(params || {}),
+        queryFn: () => getAnalyticsOverview(params),
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 }
 
 /**
- * Hook to fetch revenue analytics
+ * Hook to fetch revenue trends
  */
-export function useRevenueAnalytics(params?: AnalyticsParams) {
+export function useRevenueTrends(params?: AnalyticsParams) {
     return useQuery({
         queryKey: analyticsKeys.revenue(params || {}),
-        queryFn: () => getRevenueAnalytics(params),
+        queryFn: () => getRevenueTrends(params),
         staleTime: 5 * 60 * 1000,
     });
 }
@@ -58,30 +56,19 @@ export function useRevenueAnalytics(params?: AnalyticsParams) {
  */
 export function useAppointmentTrends(params?: AnalyticsParams) {
     return useQuery({
-        queryKey: analyticsKeys.trends(params || {}),
+        queryKey: analyticsKeys.appointments(params || {}),
         queryFn: () => getAppointmentTrends(params),
         staleTime: 5 * 60 * 1000,
     });
 }
 
 /**
- * Hook to fetch top doctors
+ * Hook to fetch user trends
  */
-export function useTopDoctors(params?: AnalyticsParams & { limit?: number }) {
+export function useUserTrends(params?: AnalyticsParams) {
     return useQuery({
-        queryKey: analyticsKeys.topDoctors(params || {}),
-        queryFn: () => getTopDoctors(params),
-        staleTime: 10 * 60 * 1000,
-    });
-}
-
-/**
- * Hook to fetch patient demographics
- */
-export function usePatientDemographics() {
-    return useQuery({
-        queryKey: analyticsKeys.demographics(),
-        queryFn: getPatientDemographics,
-        staleTime: 30 * 60 * 1000, // 30 minutes
+        queryKey: analyticsKeys.users(params || {}),
+        queryFn: () => getUserTrends(params),
+        staleTime: 5 * 60 * 1000,
     });
 }

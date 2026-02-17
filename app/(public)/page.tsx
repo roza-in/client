@@ -1,12 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Metadata } from 'next';
-import {
-    Stethoscope, Video, Shield, Clock, ChevronRight,
-    Calendar, BadgeCheck, Star, MapPin, Building2,
-    Activity, Baby, Bone, Brain, Heart, Eye,
-    Users, Briefcase, Zap, Pill
-} from 'lucide-react';
+import { Stethoscope, Video, Shield, Clock, ChevronRight, Calendar, BadgeCheck, Star, MapPin, Building2, Activity, Baby, Bone, Brain, Heart, Eye, Users, Briefcase, Zap, Pill } from 'lucide-react';
 import { fetchFeaturedDoctors, fetchFeaturedHospitals, type PublicDoctor, type PublicHospital } from '@/lib/api/public';
+import { generateOrganizationSchema, generateJsonLd } from '@/lib/seo';
 
 // =============================================================================
 // SEO Metadata
@@ -15,7 +12,7 @@ import { fetchFeaturedDoctors, fetchFeaturedHospitals, type PublicDoctor, type P
 export const metadata: Metadata = {
     title: 'Rozx Healthcare | Book Doctor Appointments Online | India',
     description: 'Book appointments with 10,000+ verified doctors. Video consultations and in-person visits. ABDM compliant healthcare platform.',
-    keywords: ['doctor appointment', 'online consultation', 'healthcare India', 'video consultation'],
+    keywords: ['doctor appointment', 'online consultation', 'healthcare India', 'video consultation', 'telemedicine', 'book doctor online', 'ROZX'],
     openGraph: {
         title: 'Rozx Healthcare | Book Doctor Appointments Online',
         description: 'Book appointments with verified doctors. Video & in-person consultations available.',
@@ -72,8 +69,17 @@ export default async function HomePage() {
         fetchFeaturedHospitals(6),
     ]);
 
+    // Organization + WebSite JSON-LD (Sitelinks Search Box)
+    const jsonLd = generateJsonLd(generateOrganizationSchema());
+
     return (
         <main className="space-y-12">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLd }}
+            />
+
             {/* Hero Section */}
             <section className="py-12 md:py-16">
                 <div className="container">
@@ -364,9 +370,9 @@ function DoctorCard({ doctor }: { doctor: PublicDoctor }) {
                         <div className="flex items-center gap-1.5">
                             <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-700 font-bold text-xs">
                                 <Star className="h-3 w-3 fill-yellow-400" />
-                                {doctor.rating?.toFixed(1) || '4.5'}
+                                {doctor.rating ? doctor.rating.toFixed(1) : 'N/A'}
                             </div>
-                            <span className="text-xs text-muted-foreground">({doctor.total_ratings || 120}+ reviews)</span>
+                            <span className="text-xs text-muted-foreground">({doctor.total_ratings ?? 0} reviews)</span>
                         </div>
                         <div className="font-bold text-foreground">₹{fee}</div>
                     </div>
@@ -424,9 +430,9 @@ function HospitalCard({ hospital }: { hospital: PublicHospital }) {
 
                 {/* Logo Overlay */}
                 <div className="absolute -bottom-6 left-5 h-16 w-16 rounded-2xl bg-background p-1.5 shadow-lg border">
-                    <div className="h-full w-full rounded-xl bg-primary/5 flex items-center justify-center overflow-hidden">
+                    <div className="relative h-full w-full rounded-xl bg-primary/5 flex items-center justify-center overflow-hidden">
                         {hospital.logo_url ? (
-                            <img src={hospital.logo_url} alt={hospital.name} className="h-full w-full object-contain" />
+                            <Image src={hospital.logo_url} alt={hospital.name} fill className="object-contain" sizes="64px" />
                         ) : (
                             <Building2 className="h-6 w-6 text-primary" />
                         )}
@@ -463,7 +469,7 @@ function HospitalCard({ hospital }: { hospital: PublicHospital }) {
                         </p>
                         <div className="flex items-center gap-1">
                             <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-500" />
-                            <span className="text-sm font-bold">{hospital.rating?.toFixed(1) || '4.5'}</span>
+                            <span className="text-sm font-bold">{hospital.rating ? hospital.rating.toFixed(1) : 'N/A'}</span>
                         </div>
                     </div>
                 </div>

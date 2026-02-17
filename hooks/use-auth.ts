@@ -11,7 +11,7 @@ import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { routes, getDashboardRoute } from '@/config';
-import { isSubdomainEnabled, getDashboardUrl, type UserRole } from '@/config/subdomains';
+import { isSubdomainEnabled, getDashboardUrl, getLoginUrl, type UserRole } from '@/config/subdomains';
 import type { UserProfile } from '@/types';
 
 // =============================================================================
@@ -131,9 +131,10 @@ export function useAuth(): UseAuthReturn {
         } catch (err) {
             // Ignore errors during logout
         } finally {
-            router.push(routes.public.login);
+            // Redirect to main domain login — login page lives only on www
+            window.location.replace(getLoginUrl({ logout: 'true' }));
         }
-    }, [storeLogout, router]);
+    }, [storeLogout]);
 
     /**
      * Refresh user data

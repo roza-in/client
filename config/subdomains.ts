@@ -257,6 +257,20 @@ export function getRoleForPath(pathname: string): UserRole | undefined {
     return undefined;
 }
 
+/**
+ * Get the login page URL on the main domain.
+ * When subdomains are enabled, login lives on www (rozx.local / rozx.in).
+ * Accepts optional query string params (e.g. { logout: 'true', session: 'expired' }).
+ */
+export function getLoginUrl(params?: Record<string, string>): string {
+    const base = isSubdomainEnabled()
+        ? buildSubdomainUrl('www', '/login')
+        : '/login';
+    if (!params || Object.keys(params).length === 0) return base;
+    const qs = new URLSearchParams(params).toString();
+    return `${base}?${qs}`;
+}
+
 // =============================================================================
 // Default Export
 // =============================================================================
@@ -274,6 +288,7 @@ export default {
     getSubdomainFromHost,
     buildSubdomainUrl,
     getDashboardUrl,
+    getLoginUrl,
     getPathPrefix,
     getRequiredRole,
     getRoleForPath,

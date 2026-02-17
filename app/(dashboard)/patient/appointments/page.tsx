@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { Calendar, Plus, AlertCircle, Video, Building2, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { routes } from '@/config';
-import { appointmentsApi } from '@/lib/api';
+import { usePatientAppointments } from '@/features/patients';
 import { AppointmentStatus } from '@/types/enums';
 import { AppointmentListItem } from '@/types/models/appointment';
 import { APPOINTMENT_STATUS_LABELS } from '@/lib/constants/appointment-status';
@@ -19,51 +18,31 @@ export default function AppointmentsPage() {
     const tab = searchParams.get('tab') || 'upcoming';
     const page = Number(searchParams.get('page')) || 1;
 
-    const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [totalPages, setTotalPages] = useState(1);
-
-    useEffect(() => {
-        async function fetchAppointments() {
-            setLoading(true);
-            setError(null);
-
-            try {
-                let statusFilter: AppointmentStatus[] | undefined;
-
-                switch (tab) {
-                    case 'upcoming':
-                        statusFilter = ['pending_payment', 'confirmed', 'rescheduled'];
-                        break;
-                    case 'completed':
-                        statusFilter = ['completed', 'checked_in', 'in_progress'];
-                        break;
-                    case 'cancelled':
-                        statusFilter = ['cancelled', 'no_show'];
-                        break;
-                }
-
-                const response = await appointmentsApi.listAppointments({
-                    status: statusFilter,
-                    page,
-                    limit: 10,
-                    sortBy: 'appointmentDate',
-                    sortOrder: tab === 'upcoming' ? 'asc' : 'desc',
-                });
-
-                setAppointments(response.appointments || []);
-                setTotalPages(response.totalPages || 1);
-            } catch (err: any) {
-                console.error('Failed to fetch appointments:', err);
-                setError('Failed to load appointments');
-            } finally {
-                setLoading(false);
-            }
+    // Build status filter from tab
+    const statusFilter: AppointmentStatus[] | undefined = (() => {
+        switch (tab) {
+            case 'upcoming':
+                return ['pending_payment', 'confirmed', 'rescheduled'];
+            case 'completed':
+                return ['completed', 'checked_in', 'in_progress'];
+            case 'cancelled':
+                return ['cancelled', 'no_show'];
+            default:
+                return undefined;
         }
+    })();
 
-        fetchAppointments();
-    }, [tab, page]);
+    const { data, isLoading: loading, error: queryError } = usePatientAppointments({
+        status: statusFilter,
+        page,
+        limit: 10,
+        sortBy: 'appointmentDate',
+        sortOrder: tab === 'upcoming' ? 'asc' : 'desc',
+    });
+
+    const appointments = data?.appointments || [];
+    const totalPages = data?.totalPages || 1;
+    const error = queryError ? 'Failed to load appointments' : null;
 
     const handleTabChange = (newTab: string) => {
         const params = new URLSearchParams(searchParams.toString());

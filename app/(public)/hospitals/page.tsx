@@ -46,6 +46,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             title,
             description,
         },
+        alternates: {
+            canonical: '/hospitals',
+        },
     };
 }
 
@@ -171,7 +174,7 @@ function HospitalCard({ hospital }: { hospital: PublicHospital }) {
     return (
         <Link
             href={`/hospitals/${hospital.id}`}
-            className="group relative flex flex-col rounded-[24px] border border-slate-100 bg-white overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:border-primary/20 hover:-translate-y-1 transition-all duration-500"
+            className="group relative flex flex-col rounded-3xl border border-slate-100 bg-white overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:border-primary/20 hover:-translate-y-1 transition-all duration-500"
         >
             {/* Banner */}
             <div className="relative h-32 bg-linear-to-br from-primary/10 to-primary/5">
@@ -193,12 +196,12 @@ function HospitalCard({ hospital }: { hospital: PublicHospital }) {
                 </div>
 
                 {/* Verified Badge */}
-                {hospital.verification_status === 'verified' && (
+                {/* {hospital.verificationStatus === 'verified' && (
                     <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-primary text-white">
                         <BadgeCheck className="h-3 w-3" />
                         <span className="text-[9px] font-bold uppercase tracking-wider">Verified</span>
                     </div>
-                )}
+                )} */}
             </div>
 
             {/* Logo */}
@@ -235,10 +238,10 @@ function HospitalCard({ hospital }: { hospital: PublicHospital }) {
                     <div className="flex items-center gap-1">
                         <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
                         <span className="text-xs font-black text-slate-700">
-                            {hospital.rating?.toFixed(1) || '4.5'}
+                            {hospital.rating ? hospital.rating.toFixed(1) : 'N/A'}
                         </span>
                         <span className="text-[10px] text-slate-400">
-                            ({hospital.total_ratings || 0})
+                            ({hospital.total_ratings ?? 0})
                         </span>
                     </div>
 

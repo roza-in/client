@@ -22,16 +22,47 @@ import {
 } from '../api/health-records';
 import { toast } from '@/hooks/use-toast';
 import { getErrorMessage } from '@/lib/api';
+import { patientsApi } from '@/lib/api/patients';
+import { appointmentsApi, type AppointmentListResponse } from '@/lib/api/appointments';
+import type { AppointmentFilters } from '@/types';
 
 // =============================================================================
 // Query Keys
 // =============================================================================
 
 export const patientKeys = {
+    dashboard: ['patient-dashboard'] as const,
+    appointments: (filters: AppointmentFilters) => ['patient-appointments', filters] as const,
     familyMembers: ['family-members'] as const,
     healthRecords: () => ['health-records'] as const,
     healthRecordList: (filters: HealthRecordFilters) => [...patientKeys.healthRecords(), 'list', filters] as const,
 };
+
+// =============================================================================
+// Dashboard & Appointments Hooks
+// =============================================================================
+
+/**
+ * Fetch the patient dashboard data (stats, upcoming appointments, activity).
+ */
+export function usePatientDashboard() {
+    return useQuery({
+        queryKey: patientKeys.dashboard,
+        queryFn: patientsApi.fetchPatientDashboard,
+        staleTime: 2 * 60 * 1000, // 2 minutes
+    });
+}
+
+/**
+ * Fetch patient appointments with filtering and pagination.
+ */
+export function usePatientAppointments(filters: AppointmentFilters = {}) {
+    return useQuery<AppointmentListResponse>({
+        queryKey: patientKeys.appointments(filters),
+        queryFn: () => appointmentsApi.listAppointments(filters),
+        staleTime: 60 * 1000, // 1 minute
+    });
+}
 
 // =============================================================================
 // Family Members Hooks

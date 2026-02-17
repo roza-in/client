@@ -12,7 +12,7 @@ import { Menu, X, User, LogOut, LayoutDashboard, Settings } from 'lucide-react';
 import { routes } from '@/config';
 import { siteConfig } from '@/config/site';
 import { useAuthStore } from '@/store';
-import { getRedirectPath } from '@/store/slices/auth.slice';
+import { getDashboardUrl, getLoginUrl } from '@/config/subdomains';
 import { getInitials } from '@/lib/utils';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import { Logo } from '@/components/ui/logo';
@@ -39,13 +39,15 @@ export function PublicHeader() {
     }, []);
 
     const initials = user ? getInitials(`${user.name}`) : 'U';
-    const dashboardPath = user ? getRedirectPath(user.role) : '/patient';
+    const dashboardPath = user ? getDashboardUrl(user.role) : '/patient';
 
     const handleLogout = async () => {
         setShowUserMenu(false);
+        setIsOpen(false);
         await logout();
-        router.push('/login');
-        router.refresh();
+        // Use replace() to prevent back-button returning to authenticated page.
+        // Redirect to main domain login — login page lives only on www.
+        window.location.replace(getLoginUrl({ logout: 'true' }));
     };
 
     if (!mounted) {

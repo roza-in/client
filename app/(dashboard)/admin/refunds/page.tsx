@@ -1,7 +1,10 @@
-'use client';
-
+import type { Metadata } from 'next';
 import { Pagination } from '@/components/shared';
 import { RotateCcw, CheckCircle, XCircle } from 'lucide-react';
+
+export const metadata: Metadata = {
+    title: 'Refunds',
+};
 
 export default function AdminRefundsPage() {
     const refunds = [

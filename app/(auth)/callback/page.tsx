@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/slices/auth.slice';
 import { LoadingSpinner } from '@/components/shared';
-import { getDashboardUrl, isSubdomainEnabled, type UserRole } from '@/config/subdomains';
+import { getDashboardUrl, getLoginUrl, isSubdomainEnabled, type UserRole } from '@/config/subdomains';
 
 /**
  * OAuth Callback Page Content
@@ -19,8 +19,7 @@ function CallbackContent() {
     useEffect(() => {
         const processCallback = async () => {
             try {
-                // 1. Handle PKCE Flow (code in query params) - Standard & Secure
-                const code = searchParams.get('code');
+                // ── 1. Handle error params from Supabase ──────────────
                 const errorParam = searchParams.get('error');
                 const errorDescription = searchParams.get('error_description');
 
@@ -28,23 +27,35 @@ function CallbackContent() {
                     throw new Error(errorDescription || errorParam);
                 }
 
+                // ── 2. Handle PKCE Flow (code in query params) — Standard & Secure ──
+                const code = searchParams.get('code');
+
                 if (code) {
-                    // Exchange code for session via backend
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-                    // Call GET /auth/google/callback?code=...
-                    // Note: backend handles the exchange and sets HttpOnly cookies
-                    const response = await fetch(`${apiUrl}/auth/google/callback?code=${code}`, {
+                    // Resolve the OAuth state for PKCE code_verifier lookup.
+                    // Priority: URL params > sessionStorage > empty (server cookie/fallback)
+                    let resolvedState = searchParams.get('rozx_state') || searchParams.get('state') || '';
+                    if (!resolvedState) {
+                        try { resolvedState = sessionStorage.getItem('rozx_oauth_state') || ''; } catch { /* SSR */ }
+                    }
+                    // Clean up sessionStorage after reading
+                    try { sessionStorage.removeItem('rozx_oauth_state'); } catch { /* SSR */ }
+
+                    const params = new URLSearchParams({ code, state: resolvedState });
+
+                    // Note: Do NOT set Content-Type on a GET request — 'application/json'
+                    // is not a CORS-safe header and would trigger a CORS preflight (OPTIONS)
+                    // that adds latency and can fail if the server doesn't handle it properly.
+                    const response = await fetch(`${apiUrl}/auth/google/callback?${params}`, {
                         method: 'GET',
                         credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
                     });
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.message || 'Authentication failed');
+                        console.error('[OAuth Callback] Server error:', response.status, errorData);
+                        throw new Error(errorData.message || `Authentication failed (${response.status})`);
                     }
 
                     const data = await response.json();
@@ -52,72 +63,58 @@ function CallbackContent() {
                     if (data.data?.user) {
                         login({
                             user: data.data.user,
-                            tokens: data.data.tokens || {},
                             isNewUser: data.data.isNewUser || false
                         });
 
-                        // Handle Redirect
                         handleRedirect(data.data.user);
                         return;
                     }
                 }
 
-                // 2. Handle Implicit Flow (tokens in hash) - Legacy/Fallback
-                // Only run on client-side
-                if (typeof window !== 'undefined') {
-                    const hash = window.location.hash.substring(1);
-                    if (hash) {
-                        const params = new URLSearchParams(hash);
-                        const accessToken = params.get('access_token');
-                        const errorHash = params.get('error');
-                        const errorDescHash = params.get('error_description');
+                // ── 3. Handle Implicit Flow (tokens in URL hash) — Fallback ──
+                // Supabase may return tokens in the hash when PKCE is unavailable.
+                // The hash is only available client-side (window.location.hash).
+                const hash = typeof window !== 'undefined' ? window.location.hash : '';
+                if (hash) {
+                    const hashParams = new URLSearchParams(hash.replace('#', ''));
+                    const accessToken = hashParams.get('access_token');
+                    const userId = hashParams.get('user_id') || hashParams.get('provider_token');
 
-                        if (errorHash) {
-                            throw new Error(errorDescHash || errorHash);
+                    if (accessToken) {
+                        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
+                        const response = await fetch(`${apiUrl}/auth/google/callback`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ accessToken, userId }),
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            console.error('[OAuth Callback] Token exchange error:', response.status, errorData);
+                            throw new Error(errorData.message || `Authentication failed (${response.status})`);
                         }
 
-                        if (accessToken) {
-                            // Decode the JWT to get user info (for userId)
-                            const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-                            const userId = tokenPayload.sub;
+                        const data = await response.json();
 
-                            // Send tokens to our backend to create a session
-                            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-                            const response = await fetch(`${apiUrl}/auth/google/callback`, {
-                                method: 'POST',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    accessToken,
-                                    userId,
-                                }),
+                        if (data.data?.user) {
+                            login({
+                                user: data.data.user,
+                                isNewUser: data.data.isNewUser || false
                             });
 
-                            if (!response.ok) {
-                                const errorData = await response.json().catch(() => ({}));
-                                throw new Error(errorData.message || 'Authentication failed');
-                            }
-
-                            const data = await response.json();
-
-                            if (data.data?.user) {
-                                login({
-                                    user: data.data.user,
-                                    tokens: data.data.tokens || {},
-                                    isNewUser: data.data.isNewUser || false
-                                });
-                                // Handle Redirect
-                                handleRedirect(data.data.user);
-                                return;
-                            }
+                            handleRedirect(data.data.user);
+                            return;
                         }
                     }
                 }
 
+                // No valid code or token found
+                throw new Error('No authorization code found in callback URL');
+
             } catch (err) {
-                console.error('OAuth callback error:', err);
+                console.error('[OAuth Callback] Error:', err);
                 setError(err instanceof Error ? err.message : 'Authentication failed');
             }
         };
@@ -127,7 +124,8 @@ function CallbackContent() {
             const explicitRedirect = searchParams.get('redirect');
 
             let destination: string;
-            if (explicitRedirect) {
+            // Validate redirect URL — must be a relative path, not protocol-relative
+            if (explicitRedirect && explicitRedirect.startsWith('/') && !explicitRedirect.startsWith('//') && !explicitRedirect.includes('\\')) {
                 destination = explicitRedirect;
             } else if (isSubdomainEnabled()) {
                 destination = getDashboardUrl(role);
@@ -156,7 +154,7 @@ function CallbackContent() {
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Authentication Failed</h2>
                     <p className="text-sm text-muted-foreground mb-6">{error}</p>
                     <button
-                        onClick={() => router.push('/login')}
+                        onClick={() => window.location.replace(getLoginUrl())}
                         className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
                     >
                         Back to Login

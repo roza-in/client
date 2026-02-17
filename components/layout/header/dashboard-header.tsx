@@ -16,6 +16,7 @@ import { siteConfig } from '@/config/site';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import { Logo } from '@/components/ui/logo';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { getLoginUrl } from '@/config/subdomains';
 
 interface DashboardHeaderProps {
     onMenuClick: () => void;
@@ -33,7 +34,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
     const handleLogout = async () => {
         setShowUserMenu(false);
         await logout();
-        window.location.href = '/login';
+        // Use replace() to prevent back-button returning to authenticated page.
+        // Redirect to main domain login — login page lives only on www.
+        window.location.replace(getLoginUrl({ logout: 'true' }));
     };
 
     return (

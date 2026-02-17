@@ -21,8 +21,6 @@ export type {
 
 export type {
     BookAppointmentInput,
-    LockSlotInput,
-    LockSlotResponse,
     BookingResponse,
     PaymentVerificationInput,
     PaymentVerificationResponse,

@@ -1,11 +1,13 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Shield, Lock, Eye, FileText, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'Privacy Policy | Rozx Healthcare',
-    description: 'We prioritize your privacy. Learn how Rozx Healthcare collects, uses, and protects your personal and medical data.',
-};
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Privacy Policy',
+    description: 'We prioritize your privacy. Learn how ROZX Healthcare collects, uses, and protects your personal and medical data.',
+    canonical: '/legal/privacy',
+});
 
 export default function PrivacyPage() {
     return (

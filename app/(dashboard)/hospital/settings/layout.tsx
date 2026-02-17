@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Building2, Clock, Bell, CreditCard, Wifi, Lock } from 'lucide-react';
+import { routes } from '@/config';
+import { Building2, Bell, CreditCard, Wifi, Lock } from 'lucide-react';
 
 export default function SettingsLayout({
     children,
@@ -12,30 +13,32 @@ export default function SettingsLayout({
 }) {
     const pathname = usePathname();
 
+    const settingsBase = routes.hospital.settings;
+
     const tabs = [
         {
             name: 'Profile',
-            href: '/hospital/settings/profile',
+            href: `${settingsBase}/profile`,
             icon: Building2,
         },
         {
             name: 'Facilities',
-            href: '/hospital/settings/facilities',
+            href: `${settingsBase}/facilities`,
             icon: Wifi,
         },
         {
             name: 'Security',
-            href: '/hospital/settings/security',
+            href: `${settingsBase}/security`,
             icon: Lock,
         },
         {
             name: 'Bank Details',
-            href: '/hospital/settings/bank',
+            href: `${settingsBase}/bank`,
             icon: CreditCard,
         },
         {
             name: 'Notifications',
-            href: '/hospital/settings/notifications',
+            href: `${settingsBase}/notifications`,
             icon: Bell,
         },
     ];

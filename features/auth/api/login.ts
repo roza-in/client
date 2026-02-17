@@ -4,7 +4,7 @@
  */
 
 import { api, endpoints } from '@/lib/api';
-import type { UserProfile, AuthTokens, AuthResponse, DoctorProfile, HospitalProfile } from '@/types';
+import type { UserProfile, AuthResponse, DoctorProfile, HospitalProfile } from '@/types';
 
 // =============================================================================
 // Types
@@ -59,16 +59,9 @@ function normalizeUserProfile(data: Record<string, unknown>): UserProfile {
 
 function normalizeAuthResponse(response: Record<string, unknown>): AuthResponse {
     const userData = (response.user || response) as Record<string, unknown>;
-    const tokensData = (response.tokens || {}) as Record<string, unknown>;
 
     return {
         user: normalizeUserProfile(userData),
-        tokens: {
-            accessToken: (tokensData.accessToken ?? response.accessToken) as string || '',
-            refreshToken: (tokensData.refreshToken ?? response.refreshToken) as string || '',
-            expiresIn: (tokensData.expiresIn ?? response.expiresIn) as number || 3600,
-            expiresAt: (tokensData.expiresAt ?? response.expiresAt) as number || Date.now() + 3600000,
-        },
         isNewUser: Boolean(response.isNewUser),
     };
 }
@@ -126,32 +119,24 @@ export async function loginWithOTP(input: LoginWithOTPInput): Promise<AuthRespon
 export async function getCurrentUser(): Promise<AuthResponse> {
     const response = await api.get<Record<string, unknown>>(
         endpoints.auth.me,
-        { skipErrorToast: true, skipAuthRedirect: true } as any
+        { skipAuth: true, skipErrorToast: true } as any
     );
     return normalizeAuthResponse(response);
 }
 
 /**
- * Logout user
+ * Refresh access token (server sets new httpOnly cookie)
  */
-export async function logout(): Promise<void> {
-    await api.post<void>(endpoints.auth.logout, {}, { skipAuth: true });
-}
-
-/**
- * Refresh access token
- */
-export async function refreshToken(): Promise<AuthTokens> {
-    const response = await api.post<AuthTokens>(endpoints.auth.refresh, {});
-    return response;
+export async function refreshToken(): Promise<void> {
+    await api.post(endpoints.auth.refresh, {});
 }
 
 /**
  * Get Google OAuth URL
  */
-export async function getGoogleOAuthUrl(redirectUrl?: string): Promise<{ url: string }> {
+export async function getGoogleOAuthUrl(redirectUrl?: string): Promise<{ url: string; state: string }> {
     const params = redirectUrl ? `?redirectUrl=${encodeURIComponent(redirectUrl)}` : '';
-    return api.get<{ url: string }>(`${endpoints.auth.googleUrl}${params}`);
+    return api.get<{ url: string; state: string }>(`${endpoints.auth.googleUrl}${params}`);
 }
 
 // =============================================================================
@@ -163,7 +148,6 @@ export const loginApi = {
     loginWithOTP,
     sendOTP,
     getCurrentUser,
-    logout,
     refreshToken,
     getGoogleOAuthUrl,
 };

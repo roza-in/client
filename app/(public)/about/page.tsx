@@ -2,16 +2,14 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Heart, Shield, Zap, Target, Rocket, Code, Stethoscope, Building2, Users, Globe, Linkedin, Twitter, Mail, Instagram, BadgeCheck } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
+import { generatePageMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/config/site';
 
-export const metadata: Metadata = {
-    title: 'About Us | Rozx Healthcare',
-    description: 'Learn about Rozx Healthcare - Building the future of healthcare technology in India. Our mission, vision, and the story behind the platform.',
-    openGraph: {
-        title: 'About Rozx Healthcare',
-        description: 'Building modern healthcare infrastructure for India',
-        type: 'website',
-    },
-};
+export const metadata: Metadata = generatePageMetadata({
+    title: 'About Us',
+    description: 'Learn about ROZX Healthcare - Building the future of healthcare technology in India. Our mission, vision, and the story behind the platform.',
+    canonical: '/about',
+});
 
 const stats = [
     { value: '10K+', label: 'Verified Doctors', icon: Stethoscope },
@@ -161,13 +159,13 @@ export default function AboutPage() {
                                     </div>
                                 </div>
                                 <div className="mt-6 flex gap-3 justify-center md:justify-start">
-                                    <a href="https://www.instagram.com/shivammauryain/" className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                    <a href={siteConfig.social.instagram} className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
                                         <Instagram className="h-5 w-5" />
                                     </a>
-                                    <a href="https://www.linkedin.com/in/shivammauryain/" className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                    <a href={siteConfig.social.linkedin} className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
                                         <Linkedin className="h-5 w-5" />
                                     </a>
-                                    <a href="https://twitter.com/shivammauryain" className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                    <a href={siteConfig.social.twitter} className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
                                         <Twitter className="h-5 w-5" />
                                     </a>
                                     <a href="mailto:shivam@rozx.in" className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors">

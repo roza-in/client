@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { SearchInput, Pagination } from '@/components/shared';
 import { Users, Mail, Phone, Calendar, ArrowUpRight, Database } from 'lucide-react';
 import { routes } from '@/config';
@@ -140,7 +141,7 @@ export default function AdminPatientsPage() {
                                             <div className="flex items-center gap-4">
                                                 <div className="relative shrink-0">
                                                     {p.avatar_url ? (
-                                                        <img src={p.avatar_url} alt={p.name} className="h-11 w-11 rounded-xl object-cover ring-2 ring-background border shadow-sm" />
+                                                        <Image src={p.avatar_url} alt={p.name} width={44} height={44} className="h-11 w-11 rounded-xl object-cover ring-2 ring-background border shadow-sm" />
                                                     ) : (
                                                         <div className="h-11 w-11 rounded-xl bg-linear-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-black border border-primary/20 shadow-sm transition-all group-hover:scale-105 group-hover:bg-primary group-hover:text-white group-hover:border-transparent">
                                                             {p.name[0].toUpperCase()}

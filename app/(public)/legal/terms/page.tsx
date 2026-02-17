@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
 import { Scale, ChevronRight, AlertTriangle, Mail } from 'lucide-react';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'Terms of Service | Rozx Healthcare',
-    description: 'Read our Terms of Service to understand the rules and regulations for using the Rozx Healthcare platform.',
-};
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Terms of Service',
+    description: 'Read our Terms of Service to understand the rules and regulations for using the ROZX Healthcare platform.',
+    canonical: '/legal/terms',
+});
 
 export default function TermsPage() {
     return (

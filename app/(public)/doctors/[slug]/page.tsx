@@ -24,10 +24,22 @@ import {
     Activity,
 } from 'lucide-react';
 import { fetchDoctor } from '@/lib/api/public';
+import { fetchDoctors } from '@/lib/api/public';
 import { DoctorCard, QuickSlotPicker, ReviewsSection } from '@/components/doctors';
+import { generateDoctorSchema, generateBreadcrumbSchema, generateJsonLd } from '@/lib/seo';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
+}
+
+/** Pre-render detail pages for all active doctors at build time */
+export async function generateStaticParams() {
+    try {
+        const { data: doctors } = await fetchDoctors({ limit: 200 });
+        return doctors.map((d) => ({ slug: d.slug || d.id }));
+    } catch {
+        return [];
+    }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -36,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!doctor) {
         return {
-            title: 'Doctor Not Found - ROZX',
+            title: 'Doctor Not Found - Rozx Healthcare',
             description: 'The requested doctor profile could not be found.',
         };
     }
@@ -48,8 +60,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             : doctor.specialization.name;
 
     return {
-        title: `Dr. ${doctor.name} - ${specializationName} in ${doctor.hospital?.city || 'India'} | ROZX`,
+        title: `Dr. ${doctor.name} - ${specializationName} in ${doctor.hospital?.city || 'India'} | ROZX Healthcare`,
         description: `Book an appointment with Dr. ${doctor.name}, a verified ${specializationName} at ${doctor.hospital?.name}. ${doctor.experience_years}+ years of experience. ${doctor.bio || ''}`.substring(0, 160),
+        openGraph: {
+            title: `Dr. ${doctor.name} - ${specializationName}`,
+            description: `Book an appointment with Dr. ${doctor.name}, ${specializationName}. ${doctor.experience_years}+ years experience.`,
+            type: 'profile',
+            images: doctor.avatar_url ? [{ url: doctor.avatar_url, width: 400, height: 400 }] : undefined,
+        },
+        twitter: {
+            card: 'summary',
+            title: `Dr. ${doctor.name} - ${specializationName} | ROZX Healthcare`,
+        },
+        alternates: {
+            canonical: `/doctors/${slug}`,
+        },
     };
 }
 
@@ -70,15 +95,57 @@ export default async function DoctorProfilePage({ params }: PageProps) {
         ? `${doctor.hospital.city}`
         : 'Address available on booking';
 
+    // ---- Schema.org Structured Data ----
+    const specializationName = !doctor.specialization
+        ? 'General Physician'
+        : typeof doctor.specialization === 'string'
+            ? doctor.specialization
+            : doctor.specialization.name;
+
+    const jsonLd = generateJsonLd([
+        generateDoctorSchema({
+            name: doctor.name,
+            slug,
+            specialization: specializationName,
+            image: doctor.avatar_url,
+            description: doctor.bio || `Dr. ${doctor.name} is a verified ${specializationName} with ${doctor.experience_years}+ years of experience.`,
+            hospital: doctor.hospital?.name,
+            hospitalSlug: doctor.hospital?.slug,
+            city: doctor.hospital?.city,
+            state: doctor.hospital?.state,
+            qualifications,
+            experience: doctor.experience_years,
+            rating: doctor.rating,
+            totalRatings: doctor.total_ratings,
+            fee: doctor.consultation_fee_online || doctor.consultation_fee_in_person,
+            languages,
+            conditionsTreated: doctor.conditions_treated,
+            proceduresPerformed: doctor.procedures_performed,
+            awards: doctor.awards,
+            memberships: doctor.memberships,
+        }),
+        generateBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Doctors', url: '/doctors' },
+            { name: `Dr. ${doctor.name}` },
+        ]),
+    ]);
+
     return (
         <div className="container py-8">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLd }}
+            />
+
             {/* Breadcrumb */}
             <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
                 <Link href="/" className="hover:text-primary transition-colors">Home</Link>
                 <ChevronRight className="h-4 w-4" />
                 <Link href="/doctors" className="hover:text-primary transition-colors">Doctors</Link>
                 <ChevronRight className="h-4 w-4" />
-                <span className="text-foreground font-medium truncate max-w-[200px]">Dr. {doctor.name}</span>
+                <span className="text-foreground font-medium truncate max-w-50">Dr. {doctor.name}</span>
             </nav>
 
             <div className="grid gap-8 lg:grid-cols-3">
@@ -104,11 +171,11 @@ export default async function DoctorProfilePage({ params }: PageProps) {
                                 <div>
                                     <h1 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2">
                                         Dr. {doctor.name}
-                                        {doctor.verification_status === 'verified' && (
+                                        {/* {doctor.verificationStatus === 'verified' && (
                                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white" title="Verified">
                                                 ✓
                                             </span>
-                                        )}
+                                        )} */}
                                     </h1>
                                     <p className="text-lg text-primary font-medium">
                                         {!doctor.specialization
@@ -248,39 +315,7 @@ export default async function DoctorProfilePage({ params }: PageProps) {
                         </div>
                     )}
 
-                    {/* Awards & Certifications */}
-                    {(doctor.awards && doctor.awards.length > 0 || doctor.certifications && doctor.certifications.length > 0) && (
-                        <div className="rounded-xl border bg-card p-6 shadow-xs">
-                            <h2 className="font-semibold mb-4 flex items-center gap-2 text-lg">
-                                <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                                    <Award className="h-5 w-5" />
-                                </span>
-                                Awards & Certifications
-                            </h2>
-                            <div className="space-y-4">
-                                {doctor.awards?.map((award, index) => (
-                                    <div key={`award-${index}`} className="flex gap-3">
-                                        <div className="mt-1 shrink-0">
-                                            <Award className="h-4 w-4 text-yellow-500" />
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-sm">{award}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {doctor.certifications?.map((cert, index) => (
-                                    <div key={`cert-${index}`} className="flex gap-3">
-                                        <div className="mt-1 shrink-0">
-                                            <FileText className="h-4 w-4 text-blue-500" />
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-sm">{cert}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {/* Awards & Certifications (DUPLICATE REMOVED) */}
 
                     {/* Additional Details Grid */}
                     <div className="grid md:grid-cols-2 gap-6">

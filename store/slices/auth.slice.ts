@@ -5,8 +5,11 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { UserProfile, AuthTokens } from '@/types';
+import type { UserProfile } from '@/types';
 import { loginApi, type AuthResponse } from '@/features/auth/api/login';
+import { logout as logoutApi } from '@/features/auth/api/logout';
+import { clearCsrfToken, resetUnauthorizedFlag } from '@/lib/api/client';
+import { clearSession } from '@/lib/auth/session';
 
 // User Roles
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'reception' | 'pharmacy' | 'admin';
@@ -14,7 +17,6 @@ export type UserRole = 'patient' | 'doctor' | 'hospital' | 'reception' | 'pharma
 export interface AuthState {
     // State
     user: UserProfile | null;
-    tokens: AuthTokens | null;
     isAuthenticated: boolean;
     isLoading: boolean;
     isInitialized: boolean;
@@ -22,11 +24,11 @@ export interface AuthState {
 
     // Actions
     setUser: (user: UserProfile | null) => void;
-    setTokens: (tokens: AuthTokens | null) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     login: (response: AuthResponse) => void;
     logout: () => Promise<void>;
+    clearAuth: () => void;
     initialize: () => Promise<void>;
     clearError: () => void;
 }
@@ -54,7 +56,6 @@ export const useAuthStore = create<AuthState>()(
         (set, get) => ({
             // Initial State
             user: null,
-            tokens: null,
             isAuthenticated: false,
             isLoading: false,
             isInitialized: false,
@@ -66,11 +67,6 @@ export const useAuthStore = create<AuthState>()(
                     user,
                     isAuthenticated: !!user,
                 });
-            },
-
-            // Set Tokens
-            setTokens: (tokens) => {
-                set({ tokens });
             },
 
             // Set Loading
@@ -90,33 +86,62 @@ export const useAuthStore = create<AuthState>()(
 
             // Login - Store auth response
             login: (response: AuthResponse) => {
+                // Reset the unauthorized guard from any previous session-expiry
+                resetUnauthorizedFlag();
                 set({
                     user: response.user,
-                    tokens: response.tokens,
                     isAuthenticated: true,
                     isLoading: false,
                     error: null,
                 });
             },
 
-            // Logout - Clear all auth state
-            logout: async () => {
-                // Clear state immediately (optimistic logout)
+            // Clear auth state (used by 401 handler, no API call)
+            clearAuth: () => {
                 set({
                     user: null,
-                    tokens: null,
                     isAuthenticated: false,
                     isLoading: false,
+                    isInitialized: false,
                     error: null,
                 });
 
+                // Clear auxiliary auth data
+                clearCsrfToken();
+                clearSession();
+
+                // Explicitly clear persisted auth data
+                try { localStorage.removeItem('rozx-auth'); } catch {}
+            },
+
+            // Logout - Notify server first (while tokens are valid), then clear local state
+            logout: async () => {
                 try {
-                    // Notify server in the background
-                    await loginApi.logout();
+                    // 1. Notify server to revoke session & clear httpOnly cookies
+                    //    MUST happen first — the POST requires valid auth cookies
+                    //    and a valid CSRF token, both of which are still present.
+                    await logoutApi();
                 } catch (error) {
-                    // Ignore logout errors - state is already cleared locally
-                    console.error('Logout error:', error);
+                    // Server logout failed — httpOnly cookies may persist.
+                    // The proxy's ?logout handler will delete them as a safety net.
+                    console.warn('[Auth] Server logout failed:', error);
                 }
+
+                // 2. Clear all local state regardless of server response
+                set({
+                    user: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    isInitialized: false,
+                    error: null,
+                });
+
+                // 3. Clear auxiliary auth data
+                clearCsrfToken();
+                clearSession();
+
+                // 4. Clear persisted auth data from localStorage
+                try { localStorage.removeItem('rozx-auth'); } catch {}
             },
 
             // Initialize - Check if user is logged in on app load
@@ -133,6 +158,7 @@ export const useAuthStore = create<AuthState>()(
                     const response = await loginApi.getCurrentUser();
 
                     if (response.user) {
+                        resetUnauthorizedFlag();
                         set({
                             user: response.user,
                             isAuthenticated: true,
@@ -152,7 +178,6 @@ export const useAuthStore = create<AuthState>()(
                     // User is not authenticated
                     set({
                         user: null,
-                        tokens: null,
                         isAuthenticated: false,
                         isLoading: false,
                         isInitialized: true,

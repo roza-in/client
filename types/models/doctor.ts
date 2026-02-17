@@ -6,7 +6,8 @@ import type {
     VerificationStatus,
     ConsultationType,
     Gender,
-    DayOfWeek
+    DayOfWeek,
+    ScheduleOverrideType
 } from '../enums';
 
 // =============================================================================
@@ -105,7 +106,9 @@ export interface DoctorCard {
     profilePictureUrl: string | null;
     rating: number;
     totalRatings: number;
-    consultationFee: number;
+    consultationFeeOnline: number;
+    consultationFeeInPerson: number;
+    consultationFeeWalkIn: number;
     hospital: {
         id: string;
         name: string;
@@ -164,11 +167,13 @@ export interface DoctorSchedule {
     id: string;
     doctorId: string;
     dayOfWeek: DayOfWeek;
+    consultationType: ConsultationType;
     startTime: string;
     endTime: string;
+    breakStart: string | null;
+    breakEnd: string | null;
     slotDurationMinutes: number;
     maxAppointments: number | null;
-    consultationType: ConsultationType;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -177,13 +182,12 @@ export interface DoctorSchedule {
 export interface ScheduleOverride {
     id: string;
     doctorId: string;
-    date: string;
-    isAvailable: boolean;
+    overrideDate: string;
+    overrideType: ScheduleOverrideType;
     startTime: string | null;
     endTime: string | null;
     reason: string | null;
     createdAt: string;
-    updatedAt: string;
 }
 
 // =============================================================================
@@ -246,16 +250,18 @@ export interface UpdateDoctorInput {
 
 export interface CreateScheduleInput {
     dayOfWeek: DayOfWeek;
+    consultationType: ConsultationType;
     startTime: string;
     endTime: string;
+    breakStart?: string;
+    breakEnd?: string;
     slotDurationMinutes?: number;
     maxAppointments?: number;
-    consultationType: ConsultationType;
 }
 
 export interface CreateOverrideInput {
-    date: string;
-    isAvailable: boolean;
+    overrideDate: string;
+    overrideType: ScheduleOverrideType;
     startTime?: string;
     endTime?: string;
     reason?: string;

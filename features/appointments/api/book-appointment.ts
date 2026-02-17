@@ -41,19 +41,6 @@ export type BookAppointmentInput = {
     idempotencyKey?: string;
 }
 
-export type LockSlotInput = {
-    doctorId: string;
-    appointmentDate: string;
-    startTime: string;
-    consultationType: ConsultationType;
-}
-
-export interface LockSlotResponse {
-    lockId: string;
-    lockedUntil: string;
-    expiresInSeconds: number;
-}
-
 export interface BookingResponse {
     appointment: Appointment;
     requiresPayment: boolean;
@@ -128,21 +115,6 @@ export async function getAvailableSlots(
         }
     );
     return response.slots || [];
-}
-
-/**
- * Lock a slot temporarily to prevent double booking
- * Slot is locked for 5 minutes during checkout
- */
-export async function lockSlot(input: LockSlotInput): Promise<LockSlotResponse> {
-    return apiClient.post<LockSlotResponse>('/appointments/lock-slot', input);
-}
-
-/**
- * Release a locked slot
- */
-export async function releaseSlot(lockId: string): Promise<void> {
-    await apiClient.delete<void>(`/appointments/lock-slot/${lockId}`);
 }
 
 /**
@@ -291,7 +263,6 @@ export async function getPaymentConfig(appointmentId: string): Promise<{
 // =============================================================================
 
 export interface CompleteBookingInput extends BookAppointmentInput {
-    onSlotLocked?: (lockResponse: LockSlotResponse) => void;
     onAppointmentCreated?: (response: BookingResponse) => void;
     onPaymentRequired?: (paymentOrder: BookingResponse['paymentOrder']) => void;
 }
@@ -372,8 +343,6 @@ export async function executeBookingFlow(
 export const bookingApi = {
     getDoctorAvailability,
     // getAvailableSlots is omitted here to avoid collision with get-slots.ts
-    lockSlot,
-    releaseSlot,
     bookAppointment,
     createPaymentOrder,
     verifyPaymentAndConfirm,

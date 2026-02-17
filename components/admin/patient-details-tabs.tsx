@@ -183,20 +183,20 @@ export function PatientDetailsTabs({
                             </h3>
                             <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border">
                                 <div className="space-y-1">
-                                    <p className="font-bold text-sm">Status: {patient.is_active ? 'Active' : 'Account Suspended'}</p>
+                                    <p className="font-bold text-sm">Status: {patient.isActive ? 'Active' : 'Account Suspended'}</p>
                                     <p className="text-xs text-muted-foreground font-medium italic">
-                                        {patient.is_active
+                                        {patient.isActive
                                             ? 'The patient can login and book consultations normally.'
                                             : 'The patient has been restricted from accessing the platform.'}
                                     </p>
                                 </div>
                                 <button
-                                    onClick={() => onToggleStatus(patient.is_active)}
+                                    onClick={() => onToggleStatus(patient.isActive)}
                                     disabled={isActionLoading}
-                                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${patient.is_active ? 'bg-green-600' : 'bg-muted shadow-inner'}`}
+                                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${patient.isActive ? 'bg-green-600' : 'bg-muted shadow-inner'}`}
                                 >
                                     <span
-                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${patient.is_active ? 'translate-x-5' : 'translate-x-0'}`}
+                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${patient.isActive ? 'translate-x-5' : 'translate-x-0'}`}
                                     />
                                 </button>
                             </div>

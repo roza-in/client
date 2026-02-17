@@ -2,13 +2,13 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Rozx Healthcare',
+        name: 'ROZX Healthcare',
         short_name: 'ROZX',
         description: 'India\'s trusted healthcare platform for doctor consultations',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',
-        theme_color: '#0D9488',
+        theme_color: '#10b981',
         orientation: 'portrait',
         icons: [
             {

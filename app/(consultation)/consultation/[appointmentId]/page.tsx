@@ -1,9 +1,9 @@
 'use client';
 
 import React, { use, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/hooks/use-auth';
 import { useConsultationRoom } from '@/features/consultations/hooks/use-consultation-room';
-import { VideoPanel } from '@/components/consultation/video-panel';
 import { ClinicalPanel } from '@/components/consultation/clinical-panel';
 import { PrescriptionForm } from '@/components/consultation/prescription-form';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,11 @@ import { Loading } from '@/components/ui/loading';
 import { Error as ErrorUI } from '@/components/ui/error';
 import { cn } from '@/lib';
 import { ApiError } from '@/lib/api/error-handler';
+
+const VideoPanel = dynamic(
+    () => import('@/components/consultation/video-panel').then(m => ({ default: m.VideoPanel })),
+    { ssr: false, loading: () => <Loading message="Loading video..." /> }
+);
 
 interface PageProps {
     params: Promise<{ appointmentId: string }>;

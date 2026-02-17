@@ -8,6 +8,7 @@ import {
     getRoleForPath,
     buildSubdomainUrl,
     isSubdomainEnabled,
+    getCookieDomain,
     type UserRole,
 } from './config/subdomains';
 import { env } from './config';
@@ -17,6 +18,7 @@ import { env } from './config';
 // =============================================================================
 
 const ACCESS_COOKIE = 'rozx_access';
+const REFRESH_COOKIE = 'rozx_refresh';
 
 /** Auth routes - redirect authenticated users away */
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password'] as const;
@@ -34,7 +36,8 @@ interface JWTPayload {
 
 /**
  * Decode JWT payload without verification (for Edge Runtime)
- * Note: Token is verified server-side, this is just for reading claims
+ * Note: Token is verified server-side, this is just for reading claims.
+ * Returns null for malformed or expired tokens.
  */
 function decodeJWT(token: string): JWTPayload | null {
     try {
@@ -48,7 +51,16 @@ function decodeJWT(token: string): JWTPayload | null {
                 .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
                 .join('')
         );
-        return JSON.parse(json);
+        const decoded: JWTPayload = JSON.parse(json);
+
+        // Reject expired tokens — the refresh flow in the API client
+        // will handle token renewal on actual API calls, but the proxy
+        // should not grant page access with a stale JWT.
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+            return null;
+        }
+
+        return decoded;
     } catch {
         return null;
     }
@@ -147,27 +159,41 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         return NextResponse.redirect(redirectUrl);
     }
 
+    // -------------------------------------------------------------------------
+    // OAuth code interception — if Supabase redirects to the wrong page (e.g.
+    // the homepage instead of /callback) with ?code=..., redirect to /callback
+    // so the OAuth code is properly exchanged.
+    // -------------------------------------------------------------------------
+    if (pathname !== '/callback' && request.nextUrl.searchParams.has('code')) {
+        const callbackUrl = new URL('/callback', request.url);
+        // Forward all query params (code, state, rozx_state, etc.)
+        request.nextUrl.searchParams.forEach((value, key) => {
+            callbackUrl.searchParams.set(key, value);
+        });
+        console.log(`[Proxy] Intercepted OAuth code on ${pathname} → redirecting to /callback`);
+        return NextResponse.redirect(callbackUrl);
+    }
+
     // Get auth state
     const token = request.cookies.get(ACCESS_COOKIE)?.value;
     const payload = token ? decodeJWT(token) : null;
     const userRole = payload?.role;
-
-    // Debug logging (controlled by NEXT_PUBLIC_DEBUG env var)
-    if (env.debug) {
-        console.log(`[Proxy] Request: ${pathname}`);
-        console.log(`[Proxy] Host: ${hostname}`);
-        console.log(`[Proxy] Token present: ${!!token}`);
-        console.log(`[Proxy] Role: ${userRole}`);
-    }
+    // Token exists but failed decode (malformed or expired)
+    const isStaleToken = !!token && !payload;
 
     // Detect subdomain (if enabled)
     const subdomain = getSubdomainFromHost(hostname);
 
     // 1. Handle Protected Routes
     if (isProtectedRoute(pathname)) {
-        // Not authenticated → redirect to login
+        // Not authenticated (no token, or expired/invalid token) → redirect to login
         if (!payload) {
-            return redirectToLogin(request, pathname);
+            const response = redirectToLogin(request, pathname);
+            // Clear the stale cookie so the client doesn't keep sending it
+            if (isStaleToken) {
+                response.cookies.delete(ACCESS_COOKIE);
+            }
+            return response;
         }
 
         // Check role matches the route
@@ -189,6 +215,35 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
     // 3. Handle Auth Routes - Redirect authenticated users
     if (isAuthRoute(pathname) && payload) {
+        // Allow explicit logout or session-expired redirect — when the client-side
+        // logout/unauthorized handler fired but httpOnly cookies were not cleared
+        // (e.g. server was unreachable, or session was revoked but JWT hasn't expired),
+        // delete them in the proxy and let the user through to /login.
+        const isForceLogout = request.nextUrl.searchParams.has('logout')
+            || request.nextUrl.searchParams.has('session');
+        if (isForceLogout) {
+            // Always redirect to the main domain login page.
+            // Login lives on www (rozx.local / rozx.in), not on subdomains.
+            let cleanUrl: URL;
+            if (isSubdomainEnabled()) {
+                cleanUrl = new URL(buildSubdomainUrl('www', pathname));
+            } else {
+                cleanUrl = new URL(pathname, request.url);
+            }
+            // Preserve reason param for the login page UI (e.g. "session=expired")
+            const session = request.nextUrl.searchParams.get('session');
+            if (session) cleanUrl.searchParams.set('session', session);
+            const response = NextResponse.redirect(cleanUrl);
+            const cookieDomain = getCookieDomain();
+            const cookieOpts: any = { path: '/' };
+            if (cookieDomain) cookieOpts.domain = cookieDomain;
+            response.cookies.set(ACCESS_COOKIE, '', { ...cookieOpts, maxAge: 0, httpOnly: true });
+            response.cookies.set(REFRESH_COOKIE, '', { ...cookieOpts, maxAge: 0, httpOnly: true });
+            if (env.debug) {
+                console.log(`[Proxy] Force-logout detected — clearing cookies and redirecting to ${cleanUrl.toString()}`);
+            }
+            return response;
+        }
         return redirectToDashboard(request, userRole);
     }
 

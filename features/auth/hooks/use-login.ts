@@ -6,7 +6,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
     loginWithPassword,
@@ -17,9 +16,9 @@ import {
     type SendOTPInput,
     type AuthResponse,
     ApiError,
-    logout,
 } from '@/features/auth/api/login';
-import { useAuthStore, getRedirectPath } from '@/store/slices/auth.slice';
+import { useAuthStore } from '@/store/slices/auth.slice';
+import { getDashboardUrl, getLoginUrl } from '@/config/subdomains';
 
 // =============================================================================
 // Types
@@ -63,7 +62,16 @@ export interface UseOTPReturn {
 // =============================================================================
 
 function generateSessionId(): string {
-    return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    // Fallback for non-secure contexts (HTTP)
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 // =============================================================================
@@ -71,7 +79,6 @@ function generateSessionId(): string {
 // =============================================================================
 
 export function useLogin(): UseLoginReturn {
-    const router = useRouter();
     const login = useAuthStore((state) => state.login);
     const setError = useAuthStore((state) => state.setError);
     const clearAuthError = useAuthStore((state) => state.clearError);
@@ -98,22 +105,26 @@ export function useLogin(): UseLoginReturn {
             login(response);
 
             // Redirect based on role
-            const redirectPath = getRedirectPath(response.user.role);
+            const redirectPath = getDashboardUrl(response.user.role);
 
             // Safety check for hospital admins
             if (response.user.role === 'hospital') {
                 const hospital = (response.user as any).hospital;
                 if (!hospital) {
                     toast.error('Hospital profile setup incomplete.');
-                    router.push('/hospital/onboarding');
+                    window.location.href = '/hospital/onboarding';
                     return;
                 }
             }
 
-            router.push(redirectPath);
-            router.refresh();
+            // Use hard redirect (not router.push) to ensure:
+            // 1. Full page reload clears any stale state from previous session
+            // 2. getDashboardUrl() returns absolute URLs which router.push
+            //    doesn't handle reliably (especially cross-subdomain)
+            // 3. AuthStoreInitializer re-runs to validate session with server
+            window.location.href = redirectPath;
         },
-        [login, router]
+        [login]
     );
 
     /**
@@ -336,7 +347,6 @@ export function useOTP(): UseOTPReturn {
 // =============================================================================
 
 export function useLogout() {
-    const router = useRouter();
     const logout = useAuthStore((state) => state.logout);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -345,16 +355,13 @@ export function useLogout() {
         try {
             await logout();
             toast.success('Logged out successfully');
-            router.push('/login');
-            router.refresh();
         } catch {
             // Still redirect even if API call fails
-            router.push('/login');
-            router.refresh();
         } finally {
             setIsLoading(false);
+            window.location.replace(getLoginUrl({ logout: 'true' }));
         }
-    }, [logout, router]);
+    }, [logout]);
 
     return { logout: handleLogout, isLoading };
 }

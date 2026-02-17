@@ -142,7 +142,7 @@ export function RegisterForm() {
     const onStep1Submit = async (data: Step1Data) => {
         clearError();
         const formattedPhone = `+91${data.phone}`;
-        const success = await sendRegistrationOTP(formattedPhone);
+        const success = await sendRegistrationOTP(formattedPhone, data.email);
         if (success) {
             setAccumulatedData(data);
             setStep(2);
@@ -471,7 +471,7 @@ export function RegisterForm() {
                         <label className="flex items-start gap-2 cursor-pointer pt-2">
                             <input {...form2.register('terms')} type="checkbox" className="mt-1 h-4 w-4 rounded border-gray-300 text-primary" />
                             <span className="text-xs text-muted-foreground">
-                                I agree to the <Link href="/terms" className="text-primary hover:underline">Terms</Link> and <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                                I agree to the <Link href="/legal/terms" className="text-primary hover:underline">Terms</Link> and <Link href="/legal/privacy" className="text-primary hover:underline">Privacy Policy</Link>
                             </span>
                         </label>
                     </div>

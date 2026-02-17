@@ -3,6 +3,7 @@
 import React, { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     ArrowLeft,
     User,
@@ -155,7 +156,7 @@ export default function AdminPatientDetailsPage({ params }: PageProps) {
                         <div className="flex items-start gap-5">
                             <div className="relative shrink-0">
                                 {p.avatar_url ? (
-                                    <img src={p.avatar_url} alt={p.name} className="h-20 w-20 md:h-24 md:w-24 rounded-3xl object-cover ring-4 ring-background shadow-xl border" />
+                                    <Image src={p.avatar_url} alt={p.name} width={96} height={96} className="h-20 w-20 md:h-24 md:w-24 rounded-3xl object-cover ring-4 ring-background shadow-xl border" />
                                 ) : (
                                     <div className="h-20 w-20 md:h-24 md:w-24 rounded-3xl bg-linear-to-br from-primary to-primary/80 flex items-center justify-center text-white text-3xl font-black ring-4 ring-background shadow-xl border">
                                         {p.name[0].toUpperCase()}

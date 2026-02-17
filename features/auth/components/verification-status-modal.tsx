@@ -1,7 +1,9 @@
 'use client';
 
+import { env } from '@/config';
 import { useAuthStore } from '@/store/slices/auth.slice';
 import { VERIFICATION_STATUS_LABELS, type VerificationStatus } from '@/types/enums';
+import { w } from 'happy-dom/lib/PropertySymbol';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -35,9 +37,12 @@ export function VerificationStatusModal({ status, role = 'hospital' }: Verificat
                             Please contact system support for reactivation or clarification.
                         </p>
                     </div>
-                    <Link href="/contact" className="w-full rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors">
+                    <button
+                        onClick={() => window.location.replace(env.appUrl + '/contact')}
+                        className="w-full rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors"
+                    >
                         Contact Support
-                    </Link>
+                    </button>
                 </div>
             );
         }
@@ -82,9 +87,12 @@ export function VerificationStatusModal({ status, role = 'hospital' }: Verificat
                     <p className="text-muted-foreground mt-2 text-sm">
                         Your {entityName.toLowerCase()} application could not be verified.
                     </p>
-                    <Link href="/contact" className="w-full rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors">
+                    <button
+                        onClick={() => window.location.replace(env.appUrl + '/contact')}
+                        className="w-full rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors"
+                    >
                         Contact Support
-                    </Link>
+                    </button>
                 </div>
             );
         }
@@ -100,9 +108,12 @@ export function VerificationStatusModal({ status, role = 'hospital' }: Verificat
                     <p className="text-muted-foreground mt-2 text-sm">
                         Access has been temporarily suspended.
                     </p>
-                    <Link href="/contact" className="w-full rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors">
+                    <button
+                        onClick={() => window.location.replace(env.appUrl + '/contact')}
+                        className="w-full rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors"
+                    >
                         Contact Support
-                    </Link>
+                    </button>
                 </div>
             );
         }
@@ -117,7 +128,7 @@ export function VerificationStatusModal({ status, role = 'hospital' }: Verificat
 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => window.location.replace(env.appUrl)}
                         className="w-full rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-2 transition-colors"
                     >
                         Go to Home

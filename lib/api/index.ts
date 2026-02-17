@@ -9,12 +9,6 @@ export { ApiError, getErrorMessage, isErrorCode, handleApiError, withRetry } fro
 
 export { endpoints } from './endpoints';
 
-export {
-    addRequestInterceptor,
-    addResponseInterceptor,
-    addErrorInterceptor,
-} from './interceptors';
-
 // Public API (for Server Components - no auth required)
 export {
     fetchDoctors,

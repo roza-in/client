@@ -15,11 +15,8 @@ export default function AdminDashboardPage() {
     const hospitals = pendingData?.hospitals || [];
     const doctors = pendingData?.doctors || [];
 
-    const recentIssues = [
-        { id: '1', title: 'Payment failed for order #12345', priority: 'high', time: '1 hour ago' },
-        { id: '2', title: 'User complaint about doctor behavior', priority: 'medium', time: '3 hours ago' },
-        { id: '3', title: 'Video call connection issues reported', priority: 'low', time: '5 hours ago' },
-    ];
+    // TODO: Add support ticket/issues API endpoint — GET /admin/recent-issues
+    const recentIssues = (stats as any)?.recentIssues || [];
 
     return (
         <div className="space-y-6">
@@ -65,7 +62,12 @@ export default function AdminDashboardPage() {
                         </div>
 
                         <div className="divide-y">
-                            {recentIssues.map((issue) => (
+                            {recentIssues.length === 0 ? (
+                                <div className="p-8 text-center text-muted-foreground">
+                                    <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                                    <p className="text-sm">No recent issues to display</p>
+                                </div>
+                            ) : recentIssues.map((issue: any) => (
                                 <div
                                     key={issue.id}
                                     className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors group"
@@ -132,7 +134,12 @@ export default function AdminDashboardPage() {
                                             <div className="min-w-0">
                                                 <p className="font-medium text-sm truncate">{item.name}</p>
                                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                                                    {(() => {
+                                                        const date = new Date(item.created_at);
+                                                        return isNaN(date.getTime())
+                                                            ? 'Invalid date'
+                                                            : formatDistanceToNow(date, { addSuffix: true });
+                                                    })()}
                                                 </p>
                                             </div>
                                             <Link
@@ -174,7 +181,12 @@ export default function AdminDashboardPage() {
                                             <div className="min-w-0">
                                                 <p className="font-medium text-sm truncate">{item.user?.name || `Dr. ${item.id.slice(0, 5)}`}</p>
                                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                                                    {(() => {
+                                                        const date = new Date(item.created_at);
+                                                        return isNaN(date.getTime())
+                                                            ? 'Invalid date'
+                                                            : formatDistanceToNow(date, { addSuffix: true });
+                                                    })()}
                                                 </p>
                                             </div>
                                             <Link

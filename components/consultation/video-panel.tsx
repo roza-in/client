@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 import { consultationsApi } from '@/features/consultations/api/consultations';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { useZegoCall } from '@/features/video/hooks/use-zego-call';
-import { useAgoraCall } from '@/features/video/hooks/use-agora-call';
+import { useZegoCall } from '@/features/consultations/hooks/use-zego-call';
+import { useAgoraCall } from '@/features/consultations/hooks/use-agora-call';
 
 interface VideoPanelProps {
     consultationId: string;

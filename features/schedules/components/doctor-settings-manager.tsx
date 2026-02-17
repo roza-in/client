@@ -66,17 +66,17 @@ export function DoctorSettingsManager({ doctorId, doctorName, initialSettings }:
             setIsLoading(true);
             const data = await api.get<any>(`/doctors/${doctorId}`);
             setSettings({
-                consultationTypes: data.consultation_types ?? data.consultationTypes ?? ['in_person'],
-                slotDurationMinutes: String(data.slot_duration_minutes ?? data.slotDurationMinutes ?? 15),
-                bufferTimeMinutes: String(data.buffer_time_minutes ?? data.bufferTimeMinutes ?? 5),
-                maxPatientsPerSlot: String(data.max_patients_per_slot ?? data.maxPatientsPerSlot ?? 1),
-                consultationFeeOnline: String(data.consultation_fee_online ?? data.consultationFeeOnline ?? 0),
-                consultationFeeInPerson: String(data.consultation_fee_in_person ?? data.consultationFeeInPerson ?? 0),
-                consultationFeeWalkIn: String(data.consultation_fee_walk_in ?? data.consultationFeeWalkIn ?? 0),
-                followUpFee: String(data.follow_up_fee ?? data.followUpFee ?? 0),
-                followUpValidityDays: String(data.follow_up_validity_days ?? data.followUpValidityDays ?? 7),
-                onlineConsultationEnabled: data.online_consultation_enabled ?? data.onlineConsultationEnabled ?? false,
-                walkInEnabled: data.walk_in_enabled ?? data.walkInEnabled ?? true,
+                consultationTypes: data.consultationTypes ?? ['in_person'],
+                slotDurationMinutes: String(data.slotDurationMinutes ?? 15),
+                bufferTimeMinutes: String(data.bufferTimeMinutes ?? 5),
+                maxPatientsPerSlot: String(data.maxPatientsPerSlot ?? 1),
+                consultationFeeOnline: String(data.consultationFeeOnline ?? 0),
+                consultationFeeInPerson: String(data.consultationFeeInPerson ?? 0),
+                consultationFeeWalkIn: String(data.consultationFeeWalkIn ?? 0),
+                followUpFee: String(data.followUpFee ?? 0),
+                followUpValidityDays: String(data.followUpValidityDays ?? 7),
+                onlineConsultationEnabled: data.onlineConsultationEnabled ?? false,
+                walkInEnabled: data.walkInEnabled ?? true,
             });
         } catch (error: any) {
             toast.error(error.message || 'Failed to load settings');

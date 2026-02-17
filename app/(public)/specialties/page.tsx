@@ -6,11 +6,14 @@ import {
     Syringe, ShieldAlert, Dna, Microscope
 } from 'lucide-react';
 import { fetchSpecializations } from '@/lib/api/public';
+import { generateSpecialtyListSchema, generateBreadcrumbSchema, generateJsonLd } from '@/lib/seo';
+import { generatePageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-    title: 'Medical Specialties | Rozx Healthcare',
-    description: 'Explore all medical specialties and find the right doctor for your healthcare needs on Rozx Healthcare.',
-};
+export const metadata: Metadata = generatePageMetadata({
+    title: 'Medical Specialties',
+    description: 'Explore all medical specialties and find the right doctor for your healthcare needs. 50+ specialties with verified specialists across India.',
+    canonical: '/specialties',
+});
 
 // Fallback icons mapping based on slug
 const iconMap: Record<string, any> = {
@@ -33,8 +36,23 @@ const iconMap: Record<string, any> = {
 export default async function SpecialtiesPage() {
     const apiSpecialties = await fetchSpecializations();
 
+    // Schema.org ItemList + Breadcrumb
+    const jsonLd = generateJsonLd([
+        generateSpecialtyListSchema(apiSpecialties),
+        generateBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Specialties' },
+        ]),
+    ]);
+
     return (
         <div className="space-y-0">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLd }}
+            />
+
             {/* Hero Section */}
             <section className="py-16 bg-linear-to-br from-primary/5 via-transparent to-primary/10">
                 <div className="container">

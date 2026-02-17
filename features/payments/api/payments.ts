@@ -136,40 +136,10 @@ export async function getPaymentStatus(paymentId: string): Promise<PaymentStatus
 }
 
 /**
- * Get payment history
- */
-export async function getPaymentHistory(filters?: PaymentFilters): Promise<{
-    payments: Payment[];
-    total: number;
-}> {
-    const { data, meta } = await api.getWithMeta<Payment[]>(endpoints.payments.history, {
-        params: filters,
-    });
-    return { payments: data, total: meta?.total || 0 };
-}
-
-/**
  * Get payment by ID
  */
 export async function getPayment(id: string): Promise<Payment> {
     return api.get<Payment>(endpoints.payments.get(id));
-}
-
-/**
- * Get invoice for a payment
- */
-export async function getInvoice(paymentId: string): Promise<Invoice> {
-    return api.get<Invoice>(endpoints.payments.invoice(paymentId));
-}
-
-/**
- * Download invoice PDF
- */
-export async function downloadInvoicePdf(paymentId: string): Promise<Blob> {
-    const response = await fetch(`/api${endpoints.payments.invoice(paymentId)}?format=pdf`, {
-        credentials: 'include',
-    });
-    return response.blob();
 }
 
 /**

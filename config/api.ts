@@ -28,8 +28,12 @@ export const endpoints = {
     register: '/auth/register',
     refresh: '/auth/refresh',
     logout: '/auth/logout',
-    me: '/users/me',
+    me: '/auth/me',
+    requestPasswordReset: '/auth/password/request-reset',
+    resetPassword: '/auth/password/reset',
+    googleUrl: '/auth/google/url',
     googleCallback: '/auth/google/callback',
+    csrfToken: '/auth/csrf-token',
   },
 
   // Users
@@ -78,7 +82,6 @@ export const endpoints = {
     complete: (id: string) => `/appointments/${id}/complete`,
     vitals: (id: string) => `/appointments/${id}/vitals`,
     checkAvailability: '/appointments/check-availability',
-    lockSlot: '/appointments/lock-slot',
     feeBreakdown: '/appointments/fee-breakdown',
   },
 
@@ -88,8 +91,6 @@ export const endpoints = {
     my: '/prescriptions/my',
     create: '/prescriptions',
     get: (id: string) => `/prescriptions/${id}`,
-    pdf: (id: string) => `/prescriptions/${id}/pdf`,
-    send: (id: string) => `/prescriptions/${id}/send`,
   },
 
   // Payments
@@ -98,23 +99,32 @@ export const endpoints = {
     get: (id: string) => `/payments/${id}`,
     createOrder: '/payments/create-order',
     verify: '/payments/verify',
-    refund: '/payments/refund',
+    refund: (id: string) => `/payments/${id}/refund`,
   },
 
   // Health Records
   healthRecords: {
-    list: '/health-records/documents',
-    upload: '/health-records/documents',
-    get: (id: string) => `/health-records/documents/${id}`,
-    delete: (id: string) => `/health-records/documents/${id}`,
+    documents: '/health-records/documents',
+    uploadDocument: '/health-records/documents',
+    document: (id: string) => `/health-records/documents/${id}`,
+    summary: '/health-records/summary',
+    familySummary: (memberId: string) => `/health-records/family-summary/${memberId}`,
+    familyMembers: '/health-records/family-members',
+    familyMember: (id: string) => `/health-records/family-members/${id}`,
+    allergies: '/health-records/allergies',
+    allergy: (id: string) => `/health-records/allergies/${id}`,
+    medications: '/health-records/medications',
+    medication: (id: string) => `/health-records/medications/${id}`,
+    medicationActions: (id: string) => `/health-records/medications/${id}/actions`,
+    medicationReminders: '/health-records/medications/reminders',
   },
 
   // Vitals
   vitals: {
-    list: '/patient-vitals',
-    create: '/patient-vitals',
-    get: (id: string) => `/patient-vitals/${id}`,
-    latest: '/patient-vitals/latest',
+    list: '/health-records/vitals',
+    create: '/health-records/vitals',
+    get: (id: string) => `/health-records/vitals/${id}`,
+    trends: '/health-records/vitals/trends',
   },
 
   // Notifications
@@ -127,29 +137,97 @@ export const endpoints = {
 
   // Support
   support: {
-    tickets: '/support/tickets',
-    createTicket: '/support/tickets',
-    ticket: (id: string) => `/support/tickets/${id}`,
-    messages: (id: string) => `/support/tickets/${id}/messages`,
+    tickets: '/support',
+    createTicket: '/support',
+    myTickets: '/support/my',
+    stats: '/support/stats',
+    ticket: (id: string) => `/support/${id}`,
+    reply: (id: string) => `/support/${id}/reply`,
+    rate: (id: string) => `/support/${id}/rate`,
+    resolve: (id: string) => `/support/${id}/resolve`,
+    close: (id: string) => `/support/${id}/close`,
   },
 
-  // Specializations
-  specializations: {
-    list: '/specializations',
-    get: (id: string) => `/specializations/${id}`,
+  // Pharmacy
+  pharmacy: {
+    medicines: '/pharmacy/medicines',
+    medicine: (id: string) => `/pharmacy/medicines/${id}`,
+    orders: '/pharmacy/orders',
+    order: (id: string) => `/pharmacy/orders/${id}`,
+    orderByNumber: (num: string) => `/pharmacy/orders/number/${num}`,
+    cancelOrder: (id: string) => `/pharmacy/orders/${id}/cancel`,
+    confirmOrder: (id: string) => `/pharmacy/orders/${id}/confirm`,
+    updateOrderStatus: (id: string) => `/pharmacy/orders/${id}/status`,
+    orderStats: '/pharmacy/orders/stats',
+    hospitalOrders: (hospitalId: string) => `/pharmacy/orders/hospital/${hospitalId}`,
+    hospitalOrderStats: (hospitalId: string) => `/pharmacy/orders/hospital/${hospitalId}/stats`,
+    returns: '/pharmacy/returns',
+    allReturns: '/pharmacy/returns/all',
+    returnStats: '/pharmacy/returns/stats',
+    returnItem: (id: string) => `/pharmacy/returns/${id}`,
+    returnByNumber: (num: string) => `/pharmacy/returns/number/${num}`,
+    createReturn: (orderId: string) => `/pharmacy/returns/${orderId}`,
+    reviewReturn: (id: string) => `/pharmacy/returns/${id}/review`,
+    pickupComplete: (id: string) => `/pharmacy/returns/${id}/pickup-complete`,
+    settlements: '/pharmacy/settlements',
+    mySettlements: '/pharmacy/settlements/my',
+    settlementStats: '/pharmacy/settlements/stats',
+    settlement: (id: string) => `/pharmacy/settlements/${id}`,
+    processSettlement: (id: string) => `/pharmacy/settlements/${id}/process`,
+    completeSettlement: (id: string) => `/pharmacy/settlements/${id}/complete`,
   },
 
-  // Search
-  search: {
-    doctors: '/search/doctors',
-    hospitals: '/search/hospitals',
-    global: '/search',
+  // Settlements (platform-level)
+  settlements: {
+    list: '/settlements',
+    create: '/settlements',
+    my: '/settlements/my',
+    stats: '/settlements/stats',
+    get: (id: string) => `/settlements/${id}`,
+    approve: (id: string) => `/settlements/${id}/approve`,
+    initiate: (id: string) => `/settlements/${id}/initiate`,
+    complete: (id: string) => `/settlements/${id}/complete`,
   },
 
-  // Upload
-  upload: {
-    image: '/upload/image',
-    document: '/upload/document',
+  // Ratings
+  ratings: {
+    list: '/ratings',
+    create: '/ratings',
+    get: (id: string) => `/ratings/${id}`,
+    moderate: (id: string) => `/ratings/${id}/moderate`,
+    doctorRatings: (doctorId: string) => `/ratings/doctors/${doctorId}`,
+    doctorStats: (doctorId: string) => `/ratings/doctors/${doctorId}/stats`,
+  },
+
+  // Audit Logs (admin)
+  auditLogs: {
+    list: '/admin/audit-logs',
+    get: (id: string) => `/admin/audit-logs/${id}`,
+    stats: '/admin/audit-logs/stats',
+  },
+
+  // Announcements
+  announcements: {
+    public: (hospitalId: string) => `/hospitals/${hospitalId}/announcements/public`,
+    active: (hospitalId: string) => `/hospitals/${hospitalId}/announcements/active`,
+    list: (hospitalId: string) => `/hospitals/${hospitalId}/announcements`,
+    create: (hospitalId: string) => `/hospitals/${hospitalId}/announcements`,
+    update: (hospitalId: string, id: string) => `/hospitals/${hospitalId}/announcements/${id}`,
+    delete: (hospitalId: string, id: string) => `/hospitals/${hospitalId}/announcements/${id}`,
+  },
+
+  // Waitlist
+  waitlist: {
+    join: '/appointments/waitlist',
+    my: '/appointments/waitlist',
+    doctor: (doctorId: string) => `/appointments/waitlist/doctor/${doctorId}`,
+    cancel: (entryId: string) => `/appointments/waitlist/${entryId}`,
+  },
+
+  // Uploads
+  uploads: {
+    image: '/uploads/image',
+    document: '/uploads/document',
   },
 } as const;
 

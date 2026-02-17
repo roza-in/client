@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function ConsultationLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -6,7 +8,13 @@ export default function ConsultationLayout({ children }: { children: React.React
 
             {/* Main Content */}
             <main className="flex-1 relative">
-                {children}
+                <Suspense fallback={
+                    <div className="flex h-screen w-full items-center justify-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    </div>
+                }>
+                    {children}
+                </Suspense>
             </main>
         </div>
     );

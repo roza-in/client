@@ -5,7 +5,7 @@
 // API
 export * from './api/login';
 export * from './api/register';
-export { logout, revokeSession, revokeAllSessions } from './api/logout';
+export { logout } from './api/logout';
 
 // Hooks
 export * from './hooks/use-login';

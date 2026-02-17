@@ -1,5 +1,5 @@
 /**
- * Rozx Healthcare Platform - SEO Module Index
+ * ROZX Healthcare Platform — SEO Module Index
  */
 
 export {
@@ -15,8 +15,10 @@ export {
     generateOrganizationSchema,
     generateHospitalSchema,
     generateDoctorSchema,
+    generateSpecialtyListSchema,
     generateBreadcrumbSchema,
     generateFAQSchema,
+    generateMedicalWebPageSchema,
     generateJsonLd,
     JsonLdScript,
 } from './structured-data';

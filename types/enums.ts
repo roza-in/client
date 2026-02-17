@@ -51,17 +51,19 @@ export type SubscriptionTier = 'free' | 'standard' | 'premium' | 'enterprise';
 
 export type HospitalStaffRole = 'receptionist' | 'nurse' | 'admin' | 'billing';
 
-export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 export const DAY_NAMES: Record<DayOfWeek, string> = {
-    0: 'Sunday',
-    1: 'Monday',
-    2: 'Tuesday',
-    3: 'Wednesday',
-    4: 'Thursday',
-    5: 'Friday',
-    6: 'Saturday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunday: 'Sunday',
 };
+
+export type ScheduleOverrideType = 'holiday' | 'leave' | 'emergency' | 'special_hours';
 
 // =============================================================================
 // Appointment Enums
@@ -77,7 +79,7 @@ export type AppointmentStatus =
     | 'no_show'
     | 'rescheduled';
 
-export type ConsultationType = 'in_person' | 'online' | 'phone' | 'home_visit';
+export type ConsultationType = 'online' | 'in_person' | 'walk_in';
 
 export type ConsultationStatus =
     | 'scheduled'
@@ -88,7 +90,7 @@ export type ConsultationStatus =
     | 'cancelled'
     | 'failed';
 
-export type BookingSource = 'app' | 'web' | 'walk_in' | 'phone' | 'referral';
+export type BookingSource = 'app' | 'web' | 'reception' | 'admin';
 
 // =============================================================================
 // Payment Enums
@@ -100,21 +102,38 @@ export type PaymentStatus =
     | 'completed'
     | 'failed'
     | 'refunded'
-    | 'partially_refunded';
+    | 'partially_refunded'
+    | 'expired'
+    | 'disputed';
 
-export type PaymentMethod = 'upi' | 'card' | 'net_banking' | 'wallet' | 'emi' | 'cash';
+export type PaymentMethod = 'upi' | 'card' | 'net_banking' | 'wallet' | 'cash';
 
-export type RefundType =
-    | 'full'
-    | 'partial_75'
-    | 'partial_50'
-    | 'none'
+export type PaymentType = 'consultation' | 'medicine_order' | 'platform_fee';
+
+export type RefundReason =
+    | 'patient_cancelled'
     | 'doctor_cancelled'
-    | 'technical_failure';
+    | 'hospital_cancelled'
+    | 'technical_failure'
+    | 'policy_violation'
+    | 'admin_override'
+    | 'chargeback'
+    | 'duplicate_payment'
+    | 'service_not_rendered';
 
-export type RefundStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type RefundStatus = 'pending' | 'approved' | 'processing' | 'completed' | 'rejected';
 
-export type SettlementStatus = 'pending' | 'processing' | 'completed' | 'failed';
+/** Alias for RefundReason — matches server's `RefundType = RefundReason` */
+export type RefundType = RefundReason;
+
+export type SettlementStatus =
+    | 'pending'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | 'on_hold'
+    | 'partially_paid';
 
 // =============================================================================
 // Health Records Enums
@@ -151,31 +170,27 @@ export type AllergySeverity = 'mild' | 'moderate' | 'severe' | 'life_threatening
 export type NotificationType =
     | 'appointment_booked'
     | 'appointment_confirmed'
-    | 'appointment_cancelled'
-    | 'appointment_rescheduled'
     | 'appointment_reminder_24h'
     | 'appointment_reminder_1h'
-    | 'appointment_check_in'
+    | 'appointment_cancelled'
+    | 'appointment_rescheduled'
     | 'consultation_started'
     | 'consultation_ended'
     | 'waiting_room_ready'
     | 'payment_success'
     | 'payment_failed'
-    | 'payment_refund_initiated'
-    | 'payment_refund_completed'
+    | 'refund_initiated'
+    | 'refund_completed'
     | 'prescription_ready'
-    | 'medicine_reminder'
-    | 'refill_reminder'
-    | 'follow_up_reminder'
-    | 'lab_report_ready'
+    | 'medicine_order_confirmed'
+    | 'medicine_dispatched'
+    | 'medicine_delivered'
+    | 'verification_approved'
+    | 'verification_rejected'
+    | 'settlement_processed'
+    | 'payout_completed'
+    | 'dispute_raised'
     | 'welcome'
-    | 'profile_verified'
-    | 'profile_rejected'
-    | 'password_changed'
-    | 'new_doctor_available'
-    | 'hospital_announcement'
-    | 'promotional'
-    | 'health_tip'
     | 'general';
 
 export type NotificationChannel = 'sms' | 'whatsapp' | 'email' | 'push' | 'in_app';
@@ -193,9 +208,9 @@ export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type TicketCategory =
     | 'appointment'
     | 'payment'
+    | 'refund'
+    | 'medicine_order'
     | 'technical'
-    | 'doctor'
-    | 'hospital'
     | 'feedback'
     | 'other';
 
@@ -214,11 +229,6 @@ export type MedicineCategory =
     | 'inhaler'
     | 'powder'
     | 'gel'
-    | 'spray'
-    | 'patch'
-    | 'suppository'
-    | 'solution'
-    | 'suspension'
     | 'other';
 
 export type MedicineSchedule =
@@ -239,18 +249,26 @@ export type MedicineOrderStatus =
     | 'pending'
     | 'confirmed'
     | 'processing'
+    | 'packed'
     | 'ready_for_pickup'
+    | 'dispatched'
     | 'out_for_delivery'
     | 'delivered'
     | 'cancelled'
-    | 'returned'
-    | 'failed';
+    | 'returned';
 
 export type FulfillmentType =
     | 'platform_delivery'
     | 'pharmacy_pickup'
     | 'self_arrange'
     | 'hospital_pharmacy';
+
+export type DeliveryPartnerCode =
+    | 'rozx_delivery'
+    | 'dunzo'
+    | 'shadowfax'
+    | 'porter'
+    | 'shiprocket';
 
 export type DeliveryPartnerStatus =
     | 'active'
@@ -280,13 +298,14 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
     failed: 'Failed',
     refunded: 'Refunded',
     partially_refunded: 'Partially Refunded',
+    expired: 'Expired',
+    disputed: 'Disputed',
 };
 
 export const CONSULTATION_TYPE_LABELS: Record<ConsultationType, string> = {
-    in_person: 'In-Person',
     online: 'Video Consultation',
-    phone: 'Phone Consultation',
-    home_visit: 'Home Visit',
+    in_person: 'In-Person',
+    walk_in: 'Walk-In',
 };
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
@@ -311,3 +330,66 @@ export const VERIFICATION_STATUS_LABELS: Record<VerificationStatus, string> = {
     rejected: 'Rejected',
     suspended: 'Suspended',
 };
+
+// =============================================================================
+// Financial & Settlement Enums
+// =============================================================================
+
+export type PayoutStatus =
+    | 'pending'
+    | 'queued'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'reversed'
+    | 'cancelled';
+
+export type PayoutMode = 'neft' | 'rtgs' | 'imps' | 'upi' | 'bank_transfer';
+
+export type DisputeStatus = 'open' | 'under_review' | 'won' | 'lost' | 'accepted' | 'expired';
+
+export type KycStatus = 'not_started' | 'pending' | 'submitted' | 'verified' | 'rejected' | 'expired';
+
+export type LedgerEntryType = 'credit' | 'debit';
+
+export type LedgerAccountType =
+    | 'patient_payment'
+    | 'platform_revenue'
+    | 'hospital_payable'
+    | 'pharmacy_payable'
+    | 'gateway_fee'
+    | 'gst_collected'
+    | 'tds_deducted'
+    | 'refund_outflow'
+    | 'hold_funds';
+
+export type ReconciliationStatus = 'pending' | 'matched' | 'mismatched' | 'resolved' | 'write_off';
+
+export type WebhookProcessingStatus = 'received' | 'processing' | 'processed' | 'failed' | 'skipped';
+
+export type SettlementFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
+// =============================================================================
+// Audit Enums
+// =============================================================================
+
+export type AuditAction =
+    | 'create'
+    | 'read'
+    | 'update'
+    | 'delete'
+    | 'login'
+    | 'logout'
+    | 'payment'
+    | 'refund'
+    | 'status_change'
+    | 'verification'
+    | 'payout'
+    | 'settlement'
+    | 'dispute';
+
+// =============================================================================
+// Waitlist Enums
+// =============================================================================
+
+export type WaitlistStatus = 'waiting' | 'notified' | 'booked' | 'expired' | 'cancelled';

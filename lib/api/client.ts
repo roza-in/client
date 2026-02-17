@@ -6,6 +6,7 @@
 
 import { env } from '@/config/env';
 import { ApiError } from './error-handler';
+import { toCamelCase } from '@/lib/utils/case-transform';
 export { ApiError };
 
 // =============================================================================
@@ -39,6 +40,51 @@ export interface PaginationMeta {
 }
 
 // =============================================================================
+// CSRF Token Management
+// =============================================================================
+
+let csrfToken: string | null = null;
+let csrfFetchPromise: Promise<string | null> | null = null;
+
+async function fetchCsrfToken(): Promise<string | null> {
+    try {
+        const response = await fetch(`${env.apiUrl}/auth/csrf-token`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (response.ok) {
+            const data = await response.json();
+            csrfToken = data.data?.csrfToken || data.csrfToken || null;
+            return csrfToken;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+async function getCsrfToken(): Promise<string | null> {
+    if (csrfToken) return csrfToken;
+    // Deduplicate concurrent fetches
+    if (!csrfFetchPromise) {
+        csrfFetchPromise = fetchCsrfToken().finally(() => {
+            csrfFetchPromise = null;
+        });
+    }
+    return csrfFetchPromise;
+}
+
+/** Call this to clear the cached CSRF token (e.g. on logout) */
+export function clearCsrfToken(): void {
+    csrfToken = null;
+}
+
+/** Reset the unauthorized-in-progress guard (call after fresh login) */
+export function resetUnauthorizedFlag(): void {
+    isUnauthorizedInProgress = false;
+}
+
+// =============================================================================
 // Token Refresh Logic
 // =============================================================================
 
@@ -53,6 +99,10 @@ async function refreshTokens(): Promise<boolean> {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({}),
         });
+        if (response.ok) {
+            // Server may rotate CSRF token on refresh — clear so it's re-fetched
+            clearCsrfToken();
+        }
         return response.ok;
     } catch {
         return false;
@@ -66,11 +116,18 @@ async function refreshTokens(): Promise<boolean> {
 type UnauthorizedCallback = () => void;
 let unauthorizedHandler: UnauthorizedCallback | null = null;
 
+/** Guard: once handleUnauthorized fires, block all further API calls and handlers */
+let isUnauthorizedInProgress = false;
+
 export function onUnauthorized(handler: UnauthorizedCallback): void {
     unauthorizedHandler = handler;
 }
 
 function handleUnauthorized(): void {
+    // Prevent multiple concurrent 401s from each calling the handler.
+    // The first one wins; subsequent ones are no-ops.
+    if (isUnauthorizedInProgress) return;
+    isUnauthorizedInProgress = true;
     if (unauthorizedHandler) {
         unauthorizedHandler();
     }
@@ -126,11 +183,20 @@ async function request<T>(
 ): Promise<ApiResponse<T>> {
     const { params, timeout = 30000, skipAuth = false, ...fetchOptions } = options;
     const url = buildUrl(endpoint, params);
+    const method = (fetchOptions.method || 'GET').toUpperCase();
 
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...(fetchOptions.headers as Record<string, string>),
     };
+
+    // Attach CSRF token to all state-changing requests (non-GET)
+    if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+        const token = await getCsrfToken();
+        if (token) {
+            headers['X-CSRF-Token'] = token;
+        }
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -148,6 +214,12 @@ async function request<T>(
 
         // Handle 401 with token refresh
         if (response.status === 401 && retry && !skipAuth) {
+            // If unauthorized redirect is already in progress, don't retry or
+            // call handleUnauthorized again — just throw immediately.
+            if (isUnauthorizedInProgress) {
+                throw new ApiError('Session expired', 401, 'SESSION_EXPIRED');
+            }
+
             if (!isRefreshing) {
                 isRefreshing = true;
                 refreshPromise = refreshTokens();
@@ -162,6 +234,16 @@ async function request<T>(
             }
 
             handleUnauthorized();
+            throw new ApiError('Session expired', 401, 'SESSION_EXPIRED');
+        }
+
+        // Handle 403 with possible CSRF mismatch — clear token and retry once
+        if (response.status === 403 && retry) {
+            const errorBody = await response.clone().json().catch(() => null);
+            if (errorBody?.error?.code === 'CSRF_INVALID' || errorBody?.error?.code === 'CSRF_MISSING') {
+                clearCsrfToken();
+                return request<T>(endpoint, options, false);
+            }
         }
 
         // Handle 204 No Content
@@ -175,7 +257,7 @@ async function request<T>(
             };
         }
 
-        const data: ApiResponse<T> = await response.json();
+        const data: ApiResponse<T> = toCamelCase(await response.json());
 
         if (!response.ok || !data.success) {
             throw new ApiError(
@@ -242,14 +324,23 @@ export const api = {
     /** Upload file with FormData */
     upload: async <T>(endpoint: string, formData: FormData, options?: RequestOptions): Promise<T> => {
         const { timeout = 60000, ...rest } = options || {};
+
+        // Attach CSRF token for uploads (state-changing)
+        const uploadHeaders: Record<string, string> = {};
+        const token = await getCsrfToken();
+        if (token) {
+            uploadHeaders['X-CSRF-Token'] = token;
+        }
+
         const response = await fetch(buildUrl(endpoint, rest.params), {
             method: 'POST',
             body: formData,
             credentials: 'include',
+            headers: uploadHeaders,
             signal: AbortSignal.timeout(timeout),
         });
 
-        const data: ApiResponse<T> = await response.json();
+        const data: ApiResponse<T> = toCamelCase(await response.json());
         if (!response.ok || !data.success) {
             throw new ApiError(
                 data.error?.message || 'Upload failed',

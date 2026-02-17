@@ -66,15 +66,15 @@ export function useDoctorPatients(doctorId: string | null, filters: DoctorPatien
                 }
             );
 
-            // Group by patient and calculate stats
+            // Group by patient ID (stable) instead of name (fragile)
             const patientMap = new Map<string, DoctorPatient>();
 
             response.data.forEach((appointment) => {
-                const patientId = appointment.id; // Using appointment id as patient identifier
+                const patientId = appointment.patientId || appointment.id;
                 const patientName = appointment.patientName || 'Unknown Patient';
 
-                if (!patientMap.has(patientName)) {
-                    patientMap.set(patientName, {
+                if (!patientMap.has(patientId)) {
+                    patientMap.set(patientId, {
                         id: patientId,
                         name: patientName,
                         phone: null, // Will be available in detail view
@@ -86,7 +86,7 @@ export function useDoctorPatients(doctorId: string | null, filters: DoctorPatien
                         lastVisitStatus: appointment.status,
                     });
                 } else {
-                    const existing = patientMap.get(patientName)!;
+                    const existing = patientMap.get(patientId)!;
                     existing.totalVisits += 1;
                     // Keep the most recent visit date
                     if (new Date(appointment.appointmentDate) > new Date(existing.lastVisitDate)) {

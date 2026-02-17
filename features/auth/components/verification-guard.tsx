@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/slices/auth.slice';
 import { LoadingSpinner } from '@/components/shared';
-import { isSubdomainEnabled, buildSubdomainUrl } from '@/config/subdomains';
+import { getLoginUrl } from '@/config/subdomains';
 import { VerificationStatusModal } from './verification-status-modal';
 
 export function VerificationGuard({ children }: { children: React.ReactNode }) {
@@ -18,14 +18,10 @@ export function VerificationGuard({ children }: { children: React.ReactNode }) {
 
         // 2. Now safe to check authentication
         if (!isAuthenticated || !user) {
-            if (isSubdomainEnabled()) {
-                // Redirect to main domain login with return URL
-                const currentUrl = window.location.href;
-                const loginUrl = buildSubdomainUrl('www', '/login');
-                window.location.href = `${loginUrl}?redirect=${encodeURIComponent(currentUrl)}`;
-            } else {
-                router.push('/login');
-            }
+            const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+            const params: Record<string, string> = {};
+            if (currentUrl) params.redirect = currentUrl;
+            window.location.replace(getLoginUrl(params));
         } else {
             // If authenticated, stop "checking"
             setIsChecking(false);
@@ -43,8 +39,8 @@ export function VerificationGuard({ children }: { children: React.ReactNode }) {
     // Role-based strict verification check
     if (user?.role === 'hospital') {
         const hospital = user.hospital;
-        const status = hospital?.verification_status;
-        const isActive = hospital?.isActive ?? hospital?.is_active ?? true;
+        const status = hospital?.verificationStatus;
+        const isActive = hospital?.isActive ?? true;
 
         const isVerified = hospital && status === 'verified';
 
@@ -59,8 +55,8 @@ export function VerificationGuard({ children }: { children: React.ReactNode }) {
 
     if (user?.role === 'doctor') {
         const doctor = user.doctor;
-        const status = doctor?.verification_status;
-        const isActive = doctor?.isActive ?? doctor?.is_active ?? true;
+        const status = doctor?.verificationStatus;
+        const isActive = doctor?.isActive ?? true;
 
         const isVerified = doctor && status === 'verified';
 

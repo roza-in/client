@@ -20,7 +20,7 @@ import {
     MoreVertical,
     AlertCircle,
 } from 'lucide-react';
-import { useConsultation, useConsultationStatus } from '@/features/video';
+import { useConsultation, useConsultationStatus } from '@/features/consultations';
 import { LoadingSpinner } from '@/components/shared';
 
 interface VideoRoomProps {

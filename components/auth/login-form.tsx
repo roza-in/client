@@ -98,7 +98,16 @@ export function LoginForm() {
                 callbackUrl += `?redirect=${encodeURIComponent(redirectParams)}`;
             }
 
-            const { url } = await getGoogleOAuthUrl(callbackUrl);
+            const { url, state } = await getGoogleOAuthUrl(callbackUrl);
+
+            // Persist state in sessionStorage so the callback page can send it
+            // to the server for PKCE code_verifier lookup. This survives the
+            // Google → Supabase → our-app redirect chain because sessionStorage
+            // is per-origin and the origin doesn't change.
+            if (state) {
+                try { sessionStorage.setItem('rozx_oauth_state', state); } catch { /* SSR / private mode */ }
+            }
+
             window.location.href = url;
         } catch (err) {
             toast.error('Failed to initiate Google login. Please try again.');
@@ -161,7 +170,7 @@ export function LoginForm() {
                             <input
                                 {...emailForm.register('email')}
                                 type="email"
-                                placeholder="john@example.com"
+                                placeholder="name@example.com"
                                 className={cn(
                                     "w-full rounded-xl border bg-background py-3 pl-10 pr-4 text-sm transition-all shadow-xs",
                                     "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
@@ -242,20 +251,17 @@ export function LoginForm() {
                             <div className="flex items-center rounded-l-xl border border-r-0 bg-muted px-3 text-sm font-medium text-muted-foreground">
                                 +91
                             </div>
-                            <div className="relative flex-1">
-                                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <input
-                                    {...phoneForm.register('phone')}
-                                    type="tel"
-                                    placeholder="9876543210"
-                                    maxLength={10}
-                                    className={cn(
-                                        "w-full rounded-r-xl border bg-background py-3 pl-10 pr-4 text-sm transition-all shadow-xs",
-                                        "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
-                                        phoneForm.formState.errors.phone && "border-destructive focus:ring-destructive/20"
-                                    )}
-                                />
-                            </div>
+                            <input
+                                {...phoneForm.register('phone')}
+                                type="tel"
+                                placeholder="9876543210"
+                                maxLength={10}
+                                className={cn(
+                                    "w-full rounded-r-xl border bg-background p-3 text-sm transition-all shadow-xs",
+                                    "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
+                                    phoneForm.formState.errors.phone && "border-destructive focus:ring-destructive/20"
+                                )}
+                            />
                         </div>
                         {phoneForm.formState.errors.phone && (
                             <p className="text-xs font-medium text-destructive mt-1 animate-slide-down">

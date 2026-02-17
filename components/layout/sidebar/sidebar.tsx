@@ -18,15 +18,11 @@ import {
     User,
     Building2,
     Stethoscope,
-    BarChart3,
-    Bell,
-    Video,
-    FileText,
-    Heart,
     X,
 } from 'lucide-react';
-import { routes } from '@/config';
+import { env, routes } from '@/config';
 import { Logo } from '@/components/ui/logo';
+import { isSubdomainEnabled } from '@/config/subdomains';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -98,6 +94,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const navigation = getNavigation();
 
+    // getHref removed: navigation links are now clean from route config and rewrites
+
     return (
         <>
             {/* Overlay */}
@@ -117,9 +115,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
                 {/* Header */}
                 <div className="flex h-16 items-center justify-between border-b px-4">
-                    <Link href="/" className="flex items-center gap-2">
+                    <button onClick={() => window.location.replace(env.appUrl)} className="flex items-center gap-2">
                         <Logo className="h-24 w-auto" />
-                    </Link>
+                    </button>
                     <button
                         onClick={onClose}
                         className="md:hidden"
@@ -133,6 +131,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <nav className="flex-1 overflow-y-auto p-4">
                     <ul className="space-y-1">
                         {navigation.map((item) => {
+                            // Use item.href directly; route config and rewrites guarantee clean paths
                             const isRoot = ['/admin', '/doctor', '/hospital', '/patient', '/reception'].includes(item.href);
                             const isActive = isRoot
                                 ? pathname === item.href

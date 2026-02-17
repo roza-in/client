@@ -296,7 +296,7 @@ function DoctorCard({ doctor }: { doctor: PublicDoctor }) {
                         <div className="flex items-center gap-2 mt-1">
                             <span className="inline-flex items-center gap-1 text-xs text-amber-600">
                                 <Star className="h-3 w-3 fill-current" />
-                                {doctor.rating?.toFixed(1) || '4.5'}
+                                {doctor.rating ? doctor.rating.toFixed(1) : 'N/A'}
                             </span>
                             <span className="text-xs text-muted-foreground">
                                 • {doctor.experience_years || 5}+ yrs

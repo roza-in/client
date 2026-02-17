@@ -9,36 +9,7 @@ import { useAuthStore } from '@/store/slices/auth.slice';
 import { LoadingSpinner } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-} from 'recharts';
-
-// Sample revenue data (in a real app, this would come from API)
-const weeklyRevenueData = [
-    { name: 'Mon', revenue: 12000 },
-    { name: 'Tue', revenue: 18500 },
-    { name: 'Wed', revenue: 15000 },
-    { name: 'Thu', revenue: 22000 },
-    { name: 'Fri', revenue: 28000 },
-    { name: 'Sat', revenue: 8000 },
-    { name: 'Sun', revenue: 5000 },
-];
-
-const monthlyRevenueData = [
-    { name: 'Jan', revenue: 85000 },
-    { name: 'Feb', revenue: 92000 },
-    { name: 'Mar', revenue: 78000 },
-    { name: 'Apr', revenue: 110000 },
-    { name: 'May', revenue: 125000 },
-    { name: 'Jun', revenue: 98000 },
-    { name: 'Jul', revenue: 115000 },
-];
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function HospitalDashboardPage() {
     const { user } = useAuthStore();
@@ -67,7 +38,9 @@ export default function HospitalDashboardPage() {
     };
     const recentAppointments = dashboardData?.recentAppointments || [];
 
-    const revenueData = timeframe === 'week' ? weeklyRevenueData : monthlyRevenueData;
+    // Revenue chart data from API (weekly/monthly breakdown)
+    // TODO: Add dedicated revenue analytics endpoint — GET /hospitals/:id/revenue-analytics
+    const revenueData = (dashboardData as any)?.revenueChart?.[timeframe] || [];
 
     if (isLoading) {
         return (
@@ -203,7 +176,7 @@ export default function HospitalDashboardPage() {
                             </div>
 
                             {/* Revenue Chart */}
-                            {isMounted ? (
+                            {revenueData.length > 0 && isMounted ? (
                                 <div className="h-[280px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={revenueData}>
@@ -248,8 +221,11 @@ export default function HospitalDashboardPage() {
                                     </ResponsiveContainer>
                                 </div>
                             ) : (
-                                <div className="h-[280px] w-full flex items-center justify-center bg-muted/10 animate-pulse rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Loading chart...</p>
+                                <div className="h-[280px] w-full flex items-center justify-center bg-muted/10 rounded-lg border border-dashed">
+                                    <div className="text-center">
+                                        <TrendingUp className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                                        <p className="text-sm text-muted-foreground">Revenue chart will appear here once data is available</p>
+                                    </div>
                                 </div>
                             )}
                         </CardContent>

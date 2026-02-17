@@ -33,17 +33,6 @@ export async function getPrescription(id: string): Promise<Prescription> {
 }
 
 /**
- * Get prescription for an appointment
- */
-export async function getPrescriptionByAppointment(appointmentId: string): Promise<Prescription | null> {
-    try {
-        return await api.get<Prescription>(endpoints.prescriptions.forAppointment(appointmentId));
-    } catch {
-        return null;
-    }
-}
-
-/**
  * Create a new prescription (doctor only)
  */
 export async function createPrescription(input: CreatePrescriptionInput): Promise<Prescription> {
@@ -60,22 +49,3 @@ export async function updatePrescription(
     return api.patch<Prescription>(endpoints.prescriptions.update(id), input);
 }
 
-/**
- * Download prescription PDF
- */
-export async function downloadPrescriptionPdf(id: string): Promise<Blob> {
-    const response = await fetch(`/api${endpoints.prescriptions.pdf(id)}`, {
-        credentials: 'include',
-    });
-    return response.blob();
-}
-
-/**
- * Send prescription via WhatsApp/Email
- */
-export async function sendPrescription(
-    id: string,
-    via: 'whatsapp' | 'email' | 'both'
-): Promise<{ sent: boolean }> {
-    return api.post<{ sent: boolean }>(endpoints.prescriptions.send(id), { via });
-}

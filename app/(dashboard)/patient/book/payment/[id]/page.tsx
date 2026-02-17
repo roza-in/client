@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { bookingApi } from '@/features/appointments';
 import { AppointmentWithDetails } from '@/types/models/appointment';
 import { routes } from '@/config/routes';
-import { useRazorpay } from '@/hooks/use-razorpay';
+import { usePaymentGateway } from '@/features/payments';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/shared';
@@ -18,12 +18,11 @@ export default function PaymentReviewPage() {
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
-    const { initiatePayment } = useRazorpay();
+    const { initiatePayment, isProcessing } = usePaymentGateway();
 
     const [appointment, setAppointment] = useState<AppointmentWithDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         async function fetchAppointmentDetails() {
@@ -53,27 +52,12 @@ export default function PaymentReviewPage() {
     const handlePayNow = async () => {
         if (!appointment) return;
 
-        try {
-            setIsProcessing(true);
-            toast.loading("Initializing payment...");
-
-            // Get payment config
-            const config = await bookingApi.getPaymentConfig(appointment.id);
-            toast.dismiss();
-
-            initiatePayment({
-                key: config.provider === 'razorpay' ? config.key_id! : '',
-                amount: config.amount,
-                currency: config.currency,
-                orderId: config.order_id!,
-                prefill: config.prefill
-            }, appointment.id);
-        } catch (error: any) {
-            toast.dismiss();
-            toast.error(error.message || "Failed to initialize payment");
-        } finally {
-            setIsProcessing(false);
-        }
+        initiatePayment({
+            appointmentId: appointment.id,
+            onFailure: (error) => {
+                toast.error(error.message || "Failed to process payment");
+            },
+        });
     };
 
     if (loading) {
@@ -114,11 +98,11 @@ export default function PaymentReviewPage() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                                    {(appointment.doctor?.name || appointment.doctors?.users?.name || 'D').charAt(0)}
+                                    {(appointment.doctor?.name || 'D').charAt(0)}
                                 </div>
                                 <div>
-                                    <p className="font-semibold">{appointment.doctor?.name ? `Dr. ${appointment.doctor.name}` : (appointment.doctors?.users?.name ? `Dr. ${appointment.doctors.users.name}` : 'Doctor')}</p>
-                                    <p className="text-sm text-muted-foreground">{appointment.doctor?.specialization || appointment.doctors?.specialization || 'Specialist'}</p>
+                                    <p className="font-semibold">{appointment.doctor?.name ? `Dr. ${appointment.doctor.name}` : 'Doctor'}</p>
+                                    <p className="text-sm text-muted-foreground">{appointment.doctor?.specialization || 'Specialist'}</p>
                                 </div>
                             </div>
 

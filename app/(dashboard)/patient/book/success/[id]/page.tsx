@@ -7,11 +7,10 @@ import { CheckCircle2, Calendar, Clock, MapPin, ArrowRight, Home } from 'lucide-
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { appointmentsApi } from '@/lib/api';
-import { bookingApi } from '@/features/appointments';
 import { LoadingSpinner } from '@/components/shared';
 import { AppointmentWithDetails } from '@/types/models/appointment';
 import { routes } from '@/config/routes';
-import { useRazorpay } from '@/hooks/use-razorpay';
+import { usePaymentGateway } from '@/features/payments';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -19,7 +18,7 @@ export default function AppointmentSuccessPage() {
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
-    const { initiatePayment } = useRazorpay();
+    const { initiatePayment, isProcessing } = usePaymentGateway();
 
     const [appointment, setAppointment] = useState<AppointmentWithDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -80,19 +79,13 @@ export default function AppointmentSuccessPage() {
 
     const handlePayNow = async () => {
         try {
-            toast.loading("Initializing payment...");
-            const config = await bookingApi.getPaymentConfig(appointment.id);
-            toast.dismiss();
-
             initiatePayment({
-                key: config.provider === 'razorpay' ? config.key_id! : '', // Assuming razorpay for now
-                amount: config.amount,
-                currency: config.currency,
-                orderId: config.order_id!,
-                prefill: config.prefill
-            }, appointment.id);
+                appointmentId: appointment.id,
+                onFailure: (error) => {
+                    toast.error(error.message || "Failed to process payment");
+                },
+            });
         } catch (error: any) {
-            toast.dismiss();
             toast.error(error.message || "Failed to initialize payment");
         }
     };
@@ -117,7 +110,7 @@ export default function AppointmentSuccessPage() {
                 <p className="text-muted-foreground mb-8">
                     {isPending
                         ? 'Your booking is currently pending payment. Please complete the payment to confirm your slot.'
-                        : <>Your appointment with <span className="font-semibold text-foreground">Dr. {appointment.doctors?.users?.name}</span> has been successfully scheduled.</>
+                        : <>Your appointment with <span className="font-semibold text-foreground">Dr. {appointment.doctor?.name}</span> has been successfully scheduled.</>
                     }
                 </p>
 

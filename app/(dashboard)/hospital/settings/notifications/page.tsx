@@ -1,4 +1,8 @@
+import type { Metadata } from 'next';
 
+export const metadata: Metadata = {
+    title: 'Notification Settings',
+};
 
 export default function HospitalNotificationSettingsPage() {
     const notifications = [

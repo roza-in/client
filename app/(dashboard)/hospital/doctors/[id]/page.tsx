@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     Calendar, Clock, Star, Phone, Mail, FileText, Languages,
     Briefcase, GraduationCap, BadgeCheck, XCircle, Shield,
@@ -107,9 +108,11 @@ export default function HospitalDoctorDetailPage() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     {imageUrl ? (
-                        <img
+                        <Image
                             src={imageUrl}
                             alt={doctorName}
+                            width={64}
+                            height={64}
                             className="h-16 w-16 rounded-full object-cover ring-2 ring-background border shadow-sm"
                         />
                     ) : (

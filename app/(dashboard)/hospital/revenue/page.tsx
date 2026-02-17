@@ -64,13 +64,19 @@ export default function HospitalRevenuePage() {
             const appts = Array.isArray(appointmentsData) ? appointmentsData : appointmentsData?.data || [];
             setTransactions(appts.slice(0, 5));
 
-            // Generate chart data from last 7 days
+            // TODO: Add dedicated revenue chart endpoint — GET /hospitals/:id/revenue-chart
+            // For now, derive basic chart data from dashboard stats
+            const monthlyRev = dashboardData?.stats?.monthlyRevenue || 0;
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const mockChartData = days.map((day, i) => ({
-                name: day,
-                revenue: Math.floor(Math.random() * 20000) + 5000 + (dashboardData?.stats?.monthlyRevenue || 50000) / 30,
-            }));
-            setChartData(mockChartData);
+            if (monthlyRev > 0) {
+                const dailyAvg = monthlyRev / 30;
+                setChartData(days.map((day) => ({
+                    name: day,
+                    revenue: Math.round(dailyAvg),
+                })));
+            } else {
+                setChartData([]);
+            }
         } catch (error) {
             console.error('Failed to fetch revenue data:', error);
             toast.error('Failed to load revenue data');
@@ -229,52 +235,17 @@ export default function HospitalRevenuePage() {
 
 
             {/* Recent Settlements */}
+            {/* TODO: Add settlement API endpoint — GET /hospitals/:id/settlements */}
             <Card className="mt-8">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-lg">Recent Settlements</CardTitle>
                     <Badge variant="outline">Weekly Payouts</Badge>
                 </CardHeader>
-                <CardContent className="p-0">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b bg-muted/40">
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Settlement ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">UTR Number</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y bg-background">
-                            {[
-                                { id: 'SET-001', date: '2024-01-22', amount: 45000, status: 'completed', utr: 'HDFCR52345678' },
-                                { id: 'SET-002', date: '2024-01-15', amount: 38500, status: 'completed', utr: 'HDFCR52345123' },
-                                { id: 'SET-003', date: '2024-01-08', amount: 42000, status: 'processing', utr: '-' },
-                            ].map((stm) => (
-                                <tr key={stm.id} className="hover:bg-muted/20 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <span className="font-medium text-sm">#{stm.id}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-muted-foreground">{formatDate(stm.date)}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="font-semibold text-sm">₹{stm.amount.toLocaleString()}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm font-mono text-muted-foreground">
-                                            {stm.utr !== '-' ? stm.utr : '—'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Badge variant="secondary" className={stm.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}>
-                                            {stm.status}
-                                        </Badge>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <CardContent>
+                    <div className="py-8 text-center text-muted-foreground">
+                        <CreditCard className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                        <p className="text-sm">Settlement history will appear here once payouts are processed.</p>
+                    </div>
                 </CardContent>
             </Card>
         </div>

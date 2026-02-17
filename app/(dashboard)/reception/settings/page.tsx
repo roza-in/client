@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { useHospital } from '@/features/hospitals';
 import {
@@ -85,9 +86,9 @@ export default function ReceptionSettingsPage() {
                     <div className="space-y-6">
                         <section className="bg-card rounded-xl border p-6 shadow-sm">
                             <div className="flex items-center gap-4 mb-6">
-                                <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl overflow-hidden">
+                                <div className="relative h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl overflow-hidden">
                                     {hospital?.logoUrl ? (
-                                        <img src={hospital.logoUrl} alt={hospital.name} className="h-full w-full object-cover" />
+                                        <Image src={hospital.logoUrl} alt={hospital.name} fill className="object-cover" sizes="64px" />
                                     ) : (
                                         hospital?.name?.[0] || 'H'
                                     )}
@@ -158,9 +159,9 @@ export default function ReceptionSettingsPage() {
                     <div className="space-y-6">
                         <section className="bg-card rounded-xl border p-6 shadow-sm">
                             <div className="flex items-center gap-6 mb-8">
-                                <div className="h-20 w-20 rounded-full border-4 border-background bg-muted overflow-hidden">
+                                <div className="relative h-20 w-20 rounded-full border-4 border-background bg-muted overflow-hidden">
                                     {user?.profilePictureUrl ? (
-                                        <img src={user.profilePictureUrl} alt={user.name || ''} className="h-full w-full object-cover" />
+                                        <Image src={user.profilePictureUrl} alt={user.name || ''} fill className="object-cover" sizes="80px" />
                                     ) : (
                                         <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary">
                                             <UserIcon className="h-10 w-10" />

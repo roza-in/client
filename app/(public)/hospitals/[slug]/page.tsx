@@ -1,11 +1,23 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Building2, Star, MapPin, Users, ChevronRight, Shield, Phone, Mail, Globe, Clock, Ambulance, Pill, Activity } from 'lucide-react';
-import { fetchHospital, type PublicHospital } from '@/lib/api/public';
+import { fetchHospital, fetchHospitals, type PublicHospital } from '@/lib/api/public';
+import { generateHospitalSchema, generateBreadcrumbSchema, generateJsonLd } from '@/lib/seo';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
+}
+
+/** Pre-render detail pages for all active hospitals at build time */
+export async function generateStaticParams() {
+    try {
+        const { data: hospitals } = await fetchHospitals({ limit: 200 });
+        return hospitals.map((h) => ({ slug: h.slug || h.id }));
+    } catch {
+        return [];
+    }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -27,6 +39,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             description: hospital.description || `${hospital.total_doctors}+ doctors available at ${hospital.name}`,
             type: 'website',
             siteName: 'ROZX Healthcare',
+            images: hospital.logo_url ? [{ url: hospital.logo_url }] : undefined,
+        },
+        alternates: {
+            canonical: `/hospitals/${slug}`,
         },
     };
 }
@@ -66,8 +82,48 @@ export default async function HospitalDetailPage({ params }: PageProps) {
 
     const operatingHours = formatOperatingHours(hospital.operating_hours);
 
+    // ---- Schema.org Structured Data ----
+    const jsonLd = generateJsonLd([
+        generateHospitalSchema({
+            name: hospital.name,
+            slug,
+            description: hospital.description,
+            image: hospital.banner_url || hospital.logo_url,
+            logo: hospital.logo_url,
+            address: hospital.address,
+            city: hospital.city,
+            state: hospital.state,
+            pincode: hospital.pincode,
+            phone: hospital.phone,
+            email: hospital.email,
+            website: hospital.website_url,
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+            rating: hospital.rating,
+            totalRatings: hospital.total_ratings,
+            specialties: hospital.specializations,
+            facilities: hospital.facilities,
+            departments: hospital.departments,
+            accreditations: hospital.accreditations,
+            foundingYear: hospital.founding_year,
+            emergencyServices: hospital.emergency_24x7,
+            type: hospital.type,
+        }),
+        generateBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Hospitals', url: '/hospitals' },
+            { name: hospital.name },
+        ]),
+    ]);
+
     return (
         <div className="container py-8">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: jsonLd }}
+            />
+
             {/* Breadcrumb */}
             <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
                 <Link href="/" className="hover:text-primary">Home</Link>
@@ -80,9 +136,9 @@ export default async function HospitalDetailPage({ params }: PageProps) {
             {/* Header */}
             <div className="rounded-xl border p-6 mb-6">
                 <div className="flex flex-col gap-6 md:flex-row">
-                    <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary/20 to-primary/10 overflow-hidden">
+                    <div className="relative flex h-32 w-32 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary/20 to-primary/10 overflow-hidden">
                         {hospital.logo_url ? (
-                            <img src={hospital.logo_url} alt={hospital.name} className="h-full w-full object-cover" />
+                            <Image src={hospital.logo_url} alt={hospital.name} fill className="object-cover" sizes="128px" />
                         ) : (
                             <Building2 className="h-16 w-16 text-primary" />
                         )}

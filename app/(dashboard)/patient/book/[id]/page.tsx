@@ -201,7 +201,7 @@ export default function BookingDetailsPage() {
                                 </p>
                                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                                    <span>{doctor.rating?.toFixed(1) || '4.5'}</span>
+                                    <span>{doctor.rating ? doctor.rating.toFixed(1) : 'N/A'}</span>
                                     <span>•</span>
                                     <span>{doctor.experience_years} yrs</span>
                                 </div>

@@ -5,9 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
-import { AuthProvider } from '@/context/auth-context';
 import { AuthStoreInitializer } from '@/components/auth/store-initializer';
-import { OAuthHandler } from '@/components/auth';
 
 // Create a new QueryClient for each request (SSR-safe pattern)
 function makeQueryClient() {
@@ -48,12 +46,9 @@ export function Providers({ children }: { children: ReactNode }) {
                 enableSystem
                 disableTransitionOnChange
             >
-                <AuthProvider>
-                    <AuthStoreInitializer />
-                    <OAuthHandler>
-                        {children}
-                    </OAuthHandler>
-                    <Toaster
+                <AuthStoreInitializer />
+                {children}
+                <Toaster
                         position="top-right"
                         richColors
                         closeButton
@@ -61,7 +56,6 @@ export function Providers({ children }: { children: ReactNode }) {
                             duration: 4000,
                         }}
                     />
-                </AuthProvider>
             </ThemeProvider>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>

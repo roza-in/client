@@ -54,6 +54,7 @@ export interface PublicDoctor {
     qualifications: string[];
     experience_years: number;
     bio?: string;
+    short_bio?: string;
     languages_spoken?: string[];
     // New fields from schema
     registration_number?: string;
@@ -64,6 +65,12 @@ export interface PublicDoctor {
     certifications?: string[];
     memberships?: string[];
     services?: string[];  // maps to available_service
+    conditions_treated?: string[];
+    procedures_performed?: string[];
+    expertise_areas?: string[];
+    education?: { degree: string; institution: string; year?: number }[];
+    faq_content?: { q: string; a: string }[];
+    featured?: boolean;
     social_profiles?: {
         linkedin?: string;
         twitter?: string;
@@ -81,7 +88,9 @@ export interface PublicDoctor {
     hospital: {
         id: string;
         name: string;
+        slug?: string;
         city?: string;
+        state?: string;
         logo_url?: string;
     };
     is_available: boolean;
@@ -103,6 +112,8 @@ export interface PublicHospital {
     city?: string;
     state?: string;
     pincode?: string;
+    latitude?: number;
+    longitude?: number;
     logo_url?: string;
     banner_url?: string;
     cover_image_url?: string;
@@ -113,6 +124,10 @@ export interface PublicHospital {
     total_beds?: number;
     facilities?: string[];
     specializations?: string[];
+    departments?: string[];
+    accreditations?: string[];
+    founding_year?: number;
+    languages_spoken?: string[];
     operating_hours?: {
         monday?: { is_open: boolean; open_time?: string; close_time?: string };
         tuesday?: { is_open: boolean; open_time?: string; close_time?: string };
@@ -134,7 +149,13 @@ export interface Specialization {
     name: string;
     slug: string;
     description?: string;
+    long_description?: string;
     icon_url?: string;
+    banner_url?: string;
+    meta_title?: string;
+    meta_description?: string;
+    common_conditions?: string[];
+    faq_content?: { q: string; a: string }[];
     is_active: boolean;
     display_order: number;
 }

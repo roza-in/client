@@ -13,7 +13,7 @@ import { routes } from '@/config';
 import type { DoctorListItem, DoctorCard as DoctorCardType } from '@/types';
 
 interface DoctorCardProps {
-    doctor: any; // Using any temporarily to bridge the gap between UI and API models
+    doctor: DoctorListItem | DoctorCardType;
     variant?: 'default' | 'compact' | 'horizontal';
     className?: string;
 }
@@ -28,7 +28,9 @@ export function DoctorCard({ doctor, variant = 'default', className }: DoctorCar
     const qualification = doctor.qualification || doctor.qualifications?.join(', ');
     const rating = doctor.rating || 0;
     const experience = doctor.experienceYears || doctor.experience_years || doctor.experience || 0;
-    const fee = doctor.consultationFee || doctor.consultation_fee_online || doctor.consultation_fee_in_person || 0;
+    const fee = ('consultationFeeOnline' in doctor ? doctor.consultationFeeOnline : 0)
+        || ('consultationFeeInPerson' in doctor ? doctor.consultationFeeInPerson : 0)
+        || 0;
     const slug = doctor.slug || doctor.id;
 
     const initials = name

@@ -289,7 +289,6 @@ export interface CreateMedicationReminderInput {
 // =============================================================================
 
 export interface PrescriptionFilters {
-    [key: string]: any;
     patientId?: string;
     doctorId?: string;
     hospitalId?: string;

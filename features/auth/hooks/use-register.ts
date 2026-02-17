@@ -15,8 +15,7 @@ import {
     registerHospitalProfile,
     registerHospitalCompliance,
     registerHospitalAddress,
-    verifyEmail,
-    forgotPassword,
+    requestPasswordReset,
     resetPassword,
     type RegisterPatientInput,
     type RegisterHospitalInput,
@@ -29,6 +28,7 @@ import {
 import { sendOTP, type SendOTPInput } from '../api/login';
 import { api, endpoints } from '@/lib/api';
 import { useAuthStore } from '@/store';
+import { getLoginUrl, getDashboardUrl } from '@/config/subdomains';
 import { routes } from '@/config';
 import { getErrorMessage } from '@/lib/api';
 
@@ -48,7 +48,7 @@ export interface UseRegisterReturn {
     resendCooldown: number;
 
     // OTP Actions
-    sendRegistrationOTP: (phone: string) => Promise<boolean>;
+    sendRegistrationOTP: (phone: string, email?: string) => Promise<boolean>;
     verifyRegistrationOTP: (phone: string, otp: string) => Promise<boolean>;
 
     // Registration Actions
@@ -69,7 +69,16 @@ export interface UseRegisterReturn {
 // =============================================================================
 
 function generateSessionId(): string {
-    return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    // Fallback for non-secure contexts (HTTP)
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 const OTP_COOLDOWN_SECONDS = 60;
@@ -120,10 +129,10 @@ export function useRegister(): UseRegisterReturn {
     }, []);
 
     /**
-     * Send OTP for registration
+     * Send OTP for registration (delivered via email)
      */
     const sendRegistrationOTP = useCallback(
-        async (phone: string): Promise<boolean> => {
+        async (phone: string, email?: string): Promise<boolean> => {
             if (resendCooldown > 0) {
                 toast.error(`Please wait ${resendCooldown} seconds before resending`);
                 return false;
@@ -136,6 +145,7 @@ export function useRegister(): UseRegisterReturn {
                 const sid = getSessionId();
                 await sendOTP({
                     phone,
+                    email,
                     purpose: 'registration',
                     sessionId: sid
                 });
@@ -194,13 +204,9 @@ export function useRegister(): UseRegisterReturn {
                 const response = await registerPatient(input);
 
                 // Auto-login after successful registration
-                if (response.tokens) {
-                    login({ user: response.user, tokens: response.tokens, isNewUser: true });
-                    router.push(routes.patient.dashboard);
-                    router.refresh();
-                } else {
-                    router.push(routes.public.login);
-                }
+                // Tokens are set as httpOnly cookies by the server
+                login({ user: response.user, isNewUser: true });
+                window.location.replace(getDashboardUrl('patient'));
 
                 return response;
             } catch (err) {
@@ -227,13 +233,9 @@ export function useRegister(): UseRegisterReturn {
                 const response = await registerHospital(input);
 
                 // Auto-login after successful registration
-                if (response.tokens) {
-                    login({ user: response.user, tokens: response.tokens, isNewUser: true });
-                    router.push(routes.hospital.dashboard);
-                    router.refresh();
-                } else {
-                    router.push(routes.public.login);
-                }
+                // Tokens are set as httpOnly cookies by the server
+                login({ user: response.user, isNewUser: true });
+                window.location.replace(getDashboardUrl('hospital'));
 
                 return response;
             } catch (err) {
@@ -260,14 +262,13 @@ export function useRegister(): UseRegisterReturn {
                 const response = await completeUserRegistration(input);
 
                 // Auto-login after successful registration
-                if (response.tokens) {
-                    login({ user: response.user, tokens: response.tokens, isNewUser: true });
-                    // For hospitals, we stay on register page but advance step
-                    // For patients, we redirect to dashboard
-                    if (input.role === 'patient') {
-                        router.push(routes.patient.dashboard);
-                        router.refresh();
-                    }
+                // Tokens are set as httpOnly cookies by the server
+                login({ user: response.user, isNewUser: true });
+
+                // For patients, redirect to dashboard
+                // For hospitals, stay on register page to advance to step 3 (hospital profile)
+                if (input.role === 'patient') {
+                    window.location.replace(getDashboardUrl('patient'));
                 }
 
                 return response;
@@ -414,30 +415,6 @@ export function useRegister(): UseRegisterReturn {
 // Additional Hooks
 // =============================================================================
 
-export function useVerifyEmail() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const verify = useCallback(async (token: string) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const result = await verifyEmail(token);
-            toast.success('Email verified successfully!');
-            return result;
-        } catch (err) {
-            const message = getErrorMessage(err);
-            setError(message);
-            toast.error(message);
-            return null;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    return { verify, isLoading, error };
-}
-
 export function useForgotPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -447,7 +424,7 @@ export function useForgotPassword() {
         setIsLoading(true);
         setError(null);
         try {
-            await forgotPassword(email);
+            await requestPasswordReset(email);
             setSent(true);
             toast.success('Password reset email sent!');
             return true;
@@ -475,7 +452,7 @@ export function useResetPassword() {
         try {
             await resetPassword(token, password);
             toast.success('Password reset successfully!');
-            router.push(routes.public.login);
+            window.location.replace(getLoginUrl());
             return true;
         } catch (err) {
             const message = getErrorMessage(err);

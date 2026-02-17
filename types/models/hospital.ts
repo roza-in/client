@@ -6,7 +6,8 @@ import type {
     HospitalType,
     VerificationStatus,
     SubscriptionTier,
-    HospitalStaffRole
+    HospitalStaffRole,
+    SettlementStatus
 } from '../enums';
 
 // =============================================================================
@@ -182,7 +183,7 @@ export interface HospitalSettlement {
     netSettlement: number;
     bankReference: string | null;
     transferId: string | null;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
+    status: SettlementStatus;
     invoiceNumber: string | null;
     invoiceUrl: string | null;
     calculatedAt: string;

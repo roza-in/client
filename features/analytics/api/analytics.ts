@@ -55,40 +55,33 @@ export interface AnalyticsParams {
 // =============================================================================
 
 /**
- * Get dashboard stats
+ * Get analytics overview (admin only)
  */
-export async function getDashboardStats(params?: AnalyticsParams): Promise<DashboardStats> {
-    return api.get<DashboardStats>('/analytics/dashboard', { params });
+export async function getAnalyticsOverview(params?: AnalyticsParams): Promise<DashboardStats> {
+    return api.get<DashboardStats>(endpoints.admin.analytics, { params });
 }
 
 /**
- * Get revenue analytics
- */
-export async function getRevenueAnalytics(params?: AnalyticsParams): Promise<RevenueData[]> {
-    return api.get<RevenueData[]>('/analytics/revenue', { params });
-}
-
-/**
- * Get appointment trends
+ * Get appointment trends (admin only)
  */
 export async function getAppointmentTrends(params?: AnalyticsParams): Promise<AppointmentTrend[]> {
-    return api.get<AppointmentTrend[]>('/analytics/appointments', { params });
+    return api.get<AppointmentTrend[]>(endpoints.admin.appointmentTrends, { params });
 }
 
 /**
- * Get top performing doctors (hospital/admin only)
+ * Get revenue trends (admin only)
  */
-export async function getTopDoctors(params?: AnalyticsParams & { limit?: number }): Promise<TopDoctor[]> {
-    return api.get<TopDoctor[]>('/analytics/top-doctors', { params });
+export async function getRevenueTrends(params?: AnalyticsParams): Promise<RevenueData[]> {
+    return api.get<RevenueData[]>(endpoints.admin.revenueTrends, { params });
 }
 
 /**
- * Get patient demographics (hospital/admin only)
+ * Get user trends (admin only)
  */
-export async function getPatientDemographics(): Promise<{
-    byGender: { gender: string; count: number }[];
-    byAge: { range: string; count: number }[];
-    byLocation: { city: string; count: number }[];
-}> {
-    return api.get('/analytics/demographics');
+export async function getUserTrends(params?: AnalyticsParams): Promise<{
+    date: string;
+    newUsers: number;
+    activeUsers: number;
+}[]> {
+    return api.get(endpoints.admin.userTrends, { params });
 }

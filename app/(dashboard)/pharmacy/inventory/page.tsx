@@ -1,112 +1,158 @@
 'use client';
 
 import { useState } from 'react';
-import { Package, AlertTriangle, Plus, Search } from 'lucide-react';
-import { StatsCard } from '@/components/patients';
+import { Package, Search, Pill } from 'lucide-react';
+import { LoadingSpinner, EmptyState, Pagination } from '@/components/shared';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { useMedicineSearch } from '@/features/pharmacy';
+import type { MedicineSearchFilters } from '@/types';
+
+const CATEGORIES = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'tablet', label: 'Tablets' },
+    { value: 'capsule', label: 'Capsules' },
+    { value: 'syrup', label: 'Syrups' },
+    { value: 'injection', label: 'Injections' },
+    { value: 'cream', label: 'Creams' },
+    { value: 'drops', label: 'Drops' },
+    { value: 'inhaler', label: 'Inhalers' },
+    { value: 'other', label: 'Other' },
+];
 
 export default function PharmacyInventoryPage() {
-    const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState<MedicineSearchFilters>({
+        page: 1,
+        limit: 20,
+    });
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Placeholder data
-    const inventory = [
-        { id: '1', name: 'Paracetamol 500mg', category: 'Analgesic', stock: 500, minStock: 100, price: 12, expiry: '2025-06-15' },
-        { id: '2', name: 'Amoxicillin 500mg', category: 'Antibiotic', stock: 20, minStock: 50, price: 45, expiry: '2025-03-20' },
-        { id: '3', name: 'Metformin 500mg', category: 'Antidiabetic', stock: 300, minStock: 100, price: 8, expiry: '2025-12-01' },
-        { id: '4', name: 'Omeprazole 20mg', category: 'Antacid', stock: 15, minStock: 30, price: 25, expiry: '2025-04-10' },
-        { id: '5', name: 'Azithromycin 250mg', category: 'Antibiotic', stock: 80, minStock: 50, price: 65, expiry: '2025-08-22' },
-    ];
+    const { data, isLoading } = useMedicineSearch({
+        ...filters,
+        search: searchTerm || undefined,
+    });
 
-    const stats = {
-        totalItems: 156,
-        lowStock: 8,
-        expiringSoon: 3,
-        totalValue: 125000,
-    };
-
-    const filteredInventory = inventory.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const medicines = data?.medicines ?? [];
+    const pagination = data?.pagination;
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold">Inventory Management</h1>
-                    <p className="text-muted-foreground">Track and manage medicine stock</p>
+            <div>
+                <h1 className="text-2xl font-bold">Medicine Inventory</h1>
+                <p className="text-muted-foreground">Search and manage medicine stock</p>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search medicines by name, brand, or generic name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
                 </div>
-                <button className="flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:bg-primary/90">
-                    <Plus className="h-4 w-4" />
-                    Add Medicine
-                </button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <StatsCard title="Total Items" value={stats.totalItems} icon={Package} variant="primary" />
-                <StatsCard title="Low Stock" value={stats.lowStock} icon={AlertTriangle} variant="warning" />
-                <StatsCard title="Expiring Soon" value={stats.expiringSoon} icon={AlertTriangle} variant="warning" />
-                <StatsCard title="Stock Value" value={`₹${(stats.totalValue / 1000).toFixed(0)}K`} icon={Package} />
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                    type="text"
-                    placeholder="Search medicines..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-lg border bg-background pl-10 pr-4 py-2"
-                />
-            </div>
-
-            {/* Inventory Table */}
-            <div className="rounded-xl border overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-muted/50">
-                        <tr>
-                            <th className="text-left p-4 font-medium">Medicine</th>
-                            <th className="text-left p-4 font-medium">Category</th>
-                            <th className="text-right p-4 font-medium">Stock</th>
-                            <th className="text-right p-4 font-medium">Min</th>
-                            <th className="text-right p-4 font-medium">Price</th>
-                            <th className="text-left p-4 font-medium">Expiry</th>
-                            <th className="text-left p-4 font-medium">Status</th>
-                            <th className="p-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                        {filteredInventory.map((item) => (
-                            <tr key={item.id} className="hover:bg-muted/30">
-                                <td className="p-4 font-medium">{item.name}</td>
-                                <td className="p-4 text-muted-foreground">{item.category}</td>
-                                <td className="p-4 text-right">{item.stock}</td>
-                                <td className="p-4 text-right text-muted-foreground">{item.minStock}</td>
-                                <td className="p-4 text-right">₹{item.price}</td>
-                                <td className="p-4 text-muted-foreground">
-                                    {new Date(item.expiry).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
-                                </td>
-                                <td className="p-4">
-                                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${item.stock < item.minStock
-                                        ? 'bg-red-100 text-red-700'
-                                        : item.stock < item.minStock * 1.5
-                                            ? 'bg-yellow-100 text-yellow-700'
-                                            : 'bg-green-100 text-green-700'
-                                        }`}>
-                                        {item.stock < item.minStock ? 'Low Stock' : item.stock < item.minStock * 1.5 ? 'Warning' : 'OK'}
-                                    </span>
-                                </td>
-                                <td className="p-4">
-                                    <button className="rounded-md border px-3 py-1 text-sm hover:bg-muted">
-                                        Edit
-                                    </button>
-                                </td>
-                            </tr>
+                <Select
+                    value={(filters.category as string) ?? 'all'}
+                    onValueChange={(value: string) =>
+                        setFilters((prev) => ({
+                            ...prev,
+                            category: value === 'all' ? undefined : (value as MedicineSearchFilters['category']),
+                            page: 1,
+                        }))
+                    }
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {CATEGORIES.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                                {c.label}
+                            </SelectItem>
                         ))}
-                    </tbody>
-                </table>
+                    </SelectContent>
+                </Select>
             </div>
+
+            {/* Results */}
+            {isLoading ? (
+                <div className="flex justify-center py-12">
+                    <LoadingSpinner />
+                </div>
+            ) : medicines.length === 0 ? (
+                <EmptyState
+                    title="No medicines found"
+                    description="Try adjusting your search or filters."
+                    icon={Pill}
+                />
+            ) : (
+                <>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {medicines.map((med) => (
+                            <div
+                                key={med.id}
+                                className="rounded-xl border p-4 hover:shadow-md transition-shadow"
+                            >
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                        <Pill className="h-5 w-5" />
+                                    </div>
+                                    <span
+                                        className={`rounded-full px-2 py-0.5 text-xs ${
+                                            med.isInStock
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                        }`}
+                                    >
+                                        {med.isInStock ? 'In Stock' : 'Out of Stock'}
+                                    </span>
+                                </div>
+                                <h3 className="font-medium truncate">{med.name}</h3>
+                                {med.genericName && (
+                                    <p className="text-sm text-muted-foreground truncate">{med.genericName}</p>
+                                )}
+                                {med.brand && (
+                                    <p className="text-xs text-muted-foreground">{med.brand}</p>
+                                )}
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <span className="text-lg font-bold">₹{med.sellingPrice}</span>
+                                    {med.discountPercent > 0 && (
+                                        <>
+                                            <span className="text-sm text-muted-foreground line-through">
+                                                ₹{med.mrp}
+                                            </span>
+                                            <span className="text-xs text-green-600 font-medium">
+                                                {med.discountPercent}% off
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
+                                    <span className="capitalize">{med.category}</span>
+                                    {med.isPrescriptionRequired && (
+                                        <span className="text-orange-600">Rx Required</span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {pagination && pagination.totalPages > 1 && (
+                        <Pagination
+                            currentPage={filters.page ?? 1}
+                            totalPages={pagination.totalPages}
+                            onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+                        />
+                    )}
+                </>
+            )}
         </div>
     );
 }

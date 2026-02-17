@@ -8,10 +8,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     getPrescriptions,
     getPrescription,
-    getPrescriptionByAppointment,
     createPrescription,
     updatePrescription,
-    sendPrescription,
 } from '../api/prescriptions';
 import type {
     PrescriptionFilters,
@@ -62,18 +60,6 @@ export function usePrescription(id: string | null) {
 }
 
 /**
- * Hook to fetch prescription for an appointment
- */
-export function usePrescriptionByAppointment(appointmentId: string | null) {
-    return useQuery({
-        queryKey: appointmentId ? prescriptionKeys.forAppointment(appointmentId) : ['prescription', 'disabled'],
-        queryFn: () => getPrescriptionByAppointment(appointmentId!),
-        enabled: !!appointmentId,
-        staleTime: 5 * 60 * 1000,
-    });
-}
-
-/**
  * Hook to create a prescription
  */
 export function useCreatePrescription() {
@@ -105,22 +91,6 @@ export function useUpdatePrescription() {
         onSuccess: (data, { id }) => {
             toast.success('Prescription updated');
             queryClient.invalidateQueries({ queryKey: prescriptionKeys.detail(id) });
-        },
-        onError: (err) => {
-            toast.error(getErrorMessage(err));
-        },
-    });
-}
-
-/**
- * Hook to send prescription
- */
-export function useSendPrescription() {
-    return useMutation({
-        mutationFn: ({ id, via }: { id: string; via: 'whatsapp' | 'email' | 'both' }) =>
-            sendPrescription(id, via),
-        onSuccess: () => {
-            toast.success('Prescription sent');
         },
         onError: (err) => {
             toast.error(getErrorMessage(err));
