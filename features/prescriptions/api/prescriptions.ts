@@ -17,7 +17,9 @@ export async function getPrescriptions(params?: PrescriptionFilters): Promise<{
     total: number;
     page: number;
 }> {
-    const { data, meta } = await api.getWithMeta<Prescription[]>(endpoints.prescriptions.my, { params });
+    // Convert params to a plain object to satisfy Record<string, ...> type
+    const plainParams = params ? { ...params } : undefined;
+    const { data, meta } = await api.getWithMeta<Prescription[]>(endpoints.prescriptions.my, { params: plainParams });
     return {
         prescriptions: data,
         total: meta?.total || 0,
